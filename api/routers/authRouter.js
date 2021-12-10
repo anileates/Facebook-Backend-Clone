@@ -4,7 +4,6 @@ const {register, login, activateAccount, logout, resendActivationMail, forgotPas
     editPassword, sendChangeMailCode, changeMailAddress} = require('../controllers/auth');
 const {getAccessToRoute, deleteJwt} = require('../middlewares/authorization/authMiddlewares')
 
-
 //.../api/auth/...
 
 router.post("/register", register);

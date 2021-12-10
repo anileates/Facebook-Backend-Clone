@@ -38,7 +38,7 @@ const activateAccount = asyncErrorWrapper(async (req, res, next) => {
         return next(new CustomError("Please provide a valid token", 400));
     }
 
-    let user = await User.({ activateAccToken: activateAccountToken });
+    let user = await User.findOne({ activateAccToken: activateAccountToken });
     if (!user) {
         return next(new CustomError("Invalid token.", 400));
     }
