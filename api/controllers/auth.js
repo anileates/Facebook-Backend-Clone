@@ -29,7 +29,8 @@ const register = asyncErrorWrapper(async (req, res, next) => {
         password
     });
 
-    res.locals.message = "Signed Up Succesfully. Please activate your account.";
+    // Message content depends on whether acc. is created now or just email is wanted again. So, we need pass it by res
+    res.message = "Signed Up Succesfully. Please activate your account.";
 
     sendAccountActivationMail(user, res, next);
 });

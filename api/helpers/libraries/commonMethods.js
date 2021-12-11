@@ -5,7 +5,7 @@ const sendAccountActivationMail =  async (user, res, next)  => {
     const activateAccToken = user.generateActivateAccountToken();
     await user.save();
 
-    const activateAccURL = `http://localhost:5000/api/auth/activateAccount?activateAccountToken=${activateAccToken}`;
+    const activateAccURL = `${process.env.DOMAIN}${process.env.API_PATH}/auth/activateAccount?activateAccountToken=${activateAccToken}`;
 
     const emailTemplate = `
     <h3>Click link to activate your account.</h3>
@@ -22,7 +22,7 @@ const sendAccountActivationMail =  async (user, res, next)  => {
 
         return res.status(200).json({
             success: true,
-            message: res.locals.message //mesaj içeriği, hesap yeni oluşturuldu ise farklı tekrar gönderiliyorsa farklı olacak.
+            message: res.message 
         });
     }
     catch (err) {
