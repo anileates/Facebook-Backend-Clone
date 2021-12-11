@@ -7,7 +7,7 @@ const {getAccessToRoute, deleteJwt} = require('../middlewares/authorization/auth
 //.../api/auth/...
 
 router.post("/register", register);
-router.get("/activateAccount", activateAccount);
+router.get("/activate-account", activateAccount);
 router.post("/resendActivationMail", resendActivationMail);
 
 router.post("/login", login);

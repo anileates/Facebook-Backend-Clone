@@ -36,21 +36,21 @@ const register = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const activateAccount = asyncErrorWrapper(async (req, res, next) => {
-    const { activateAccountToken } = req.query;
+    const { accountActivationToken } = req.query;
 
-    if (!activateAccountToken) {
-        return next(new CustomError("Please provide a valid token", 400));
+    if (!accountActivationToken) {
+        return next(new CustomError(errorsEnum.INVALID_ACTIVATION_TOKEN, 400));
     }
 
-    let user = await User.findOne({ activateAccToken: activateAccountToken });
+    let user = await User.findOne({ accountActivationToken });
     if (!user) {
-        return next(new CustomError("Invalid token.", 400));
+        return next(new CustomError(errorsEnum.INVALID_ACTIVATION_TOKEN, 400));
     }
 
     user.enabled = true;
     await user.save();
 
-    res.send("Account succesfully activated")
+    return res.send("Account succesfully activated")
 });
 
 const login = asyncErrorWrapper(async (req, res, next) => {

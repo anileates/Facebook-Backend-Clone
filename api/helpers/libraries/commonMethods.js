@@ -1,11 +1,12 @@
 const sendMail = require('../libraries/sendEmail');
 const CustomError = require('../errorHelpers/CustomError');
+const errorEnum = require('../errorHelpers/errorsEnum')
 
 const sendAccountActivationMail =  async (user, res, next)  => {
-    const activateAccToken = user.generateActivateAccountToken();
+    const accountActivationToken = user.generateteAccountActivationToken();
     await user.save();
 
-    const activateAccURL = `${process.env.DOMAIN}${process.env.API_PATH}/auth/activateAccount?activateAccountToken=${activateAccToken}`;
+    const activateAccURL = `${process.env.DOMAIN}${process.env.API_PATH}/auth/activate-account?accountActivationToken=${accountActivationToken}`;
 
     const emailTemplate = `
     <h3>Click link to activate your account.</h3>
@@ -28,7 +29,7 @@ const sendAccountActivationMail =  async (user, res, next)  => {
     catch (err) {
         await user.save();
 
-        return next(new CustomError("Email Could Not Be Sent.", 500));
+        return next(new CustomError(errorEnum.EMAIL_ERROR, 500));
     }   
 };
 

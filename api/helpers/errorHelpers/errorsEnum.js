@@ -26,6 +26,14 @@ const errorsEnum = {
     LIMIT_UNEXPECTED_FILE: {
         type: 'file/file-limit-exceeded',
         message: 'You can not add more than 3 media file.'
+    },
+    INVALID_ACTIVATION_TOKEN: {
+        type: 'validation/invalid-activation-token',
+        message: 'Please provide a valid token.'
+    },
+    EMAIL_ERROR: {
+        type: 'smtp/smtp-error',
+        message: 'Couldn\'t send email. Try again later.'
     }
 }
 

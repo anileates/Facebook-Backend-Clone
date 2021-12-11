@@ -55,7 +55,7 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false
     },
-    activateAccToken: { type: String },
+    accountActivationToken: { type: String },
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
     currentCity: { type: String },
@@ -161,18 +161,18 @@ UserSchema.methods.generateResetPasswordTokenFromUser = function () {
     return resetPasswordToken;
 }
 
-UserSchema.methods.generateActivateAccountToken = function () {
-    //Kripte edilmiş bir token üretir. Bu token hesap aktive etmek içindir, mail adresine gönderilen URL'ye eklenir. 
+UserSchema.methods.generateteAccountActivationToken = function () {
+    // Generates a random string
     const randomHexString = crypto.randomBytes(18).toString("hex");
 
-    const activateAccToken =
+    // And then, encrypt it by SHA256
+    const accountActivationToken =
         crypto.createHash("SHA256")
             .update(randomHexString)
             .digest("hex");
 
-    this.activateAccToken = activateAccToken;
-
-    return activateAccToken;
+    this.accountActivationToken = accountActivationToken;
+    return accountActivationToken;
 }
 
 UserSchema.methods.generateChangeEmailCode = function () {
