@@ -5,16 +5,19 @@ const { sendJwtToClient } = require('../helpers/authorizationHelpers/tokenHelper
 const { sendAccountActivationMail } = require('../helpers/libraries/commonMethods');
 const { validateUserInputs, comparePasswords } = require('../helpers/inputHelpers');
 const sendMail = require('../helpers/libraries/sendEmail');
-const Post = require('../models/Post');
 const moment = require('moment');
+const errorsEnum = require('../helpers/errorHelpers/errorsEnum')
 
 const register = asyncErrorWrapper(async (req, res, next) => {
     const { firstName, lastName, birthday, gender, email, password } = req.body;
 
     //Check birthday format
     let isBirthdayValid = moment(birthday, ["YYYY-MM-DD", "YYYY/MM/DD", "YYYY.MM.DD"], true).isValid();
-    if(!isBirthdayValid){
-        return next(new CustomError('Invalid date format. Birthday format must be YYYY-MM-DD ', 400));
+    if (!isBirthdayValid) {
+        return next(
+            new CustomError(errorsEnum.INVALID_DATE_FORMAT, 400,
+                'Invalid date format. Birthday format must be YYYY-MM-DD',
+            ));
     }
 
     const user = await User.create({
@@ -206,7 +209,7 @@ const sendChangeMailCode = asyncErrorWrapper(async (req, res, next) => {
     const { password, newEmail } = req.body;
     const user = await User.findById(req.loggedUser.id).select('+password');
 
-    if(!(password && newEmail)){
+    if (!(password && newEmail)) {
         return next(new CustomError("check your inputs", 400));
     }
 

@@ -1,10 +1,12 @@
 /**
- * Basit bir Error sınıfıdır. Error Handler'ımıza hatalarımızı daha düzgün bir şekilde geçirebilmemiz için.
+ * Make errors a object by this class
+ * If specific message is given, the message property defined in @errorEnum is ignored 
  */
 
 class CustomError extends Error {
-    constructor(message, status){
-        super(message);
+    constructor(errorEnum, status, message){
+        super(message || errorEnum.message);
+        this.type = errorEnum.type;
         this.status = status;
     }
 }
