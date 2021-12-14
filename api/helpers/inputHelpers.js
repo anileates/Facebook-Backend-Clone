@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 
+// Checks whether credentials are empty or not
 const validateUserInputs = (email, password) => {
     return email && password;
 }

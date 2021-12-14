@@ -42,6 +42,14 @@ const errorsEnum = {
     ACCOUNT_ALREADY_ACTIVATED: {
         type: 'warn/already-activated',
         message: 'Account already activated'
+    },
+    ACCOUNT_NOT_ACTIVATED: {
+        type: 'auth/account-not-activated',
+        message: 'Account is not activated. Please activate your account.'
+    },
+    INVALID_INPUTS: {
+        type: 'validation/invalid-inputs',
+        message: 'Check your credentials'
     }
 }
 

@@ -57,18 +57,18 @@ const login = asyncErrorWrapper(async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!validateUserInputs(email, password)) {
-        return next(new CustomError("Check your inputs", 400));
+        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400));
     }
 
     const user = await User.findOne({ email }).select('+password');
 
-    //Compares hashed pw and users input by bcrypt
+    //Compares hashed pw and user input by bcrypt
     if (!user || !comparePasswords(password, user.password)) {
-        return next(new CustomError("Check Your Credentials", 400));
+        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400));
     }
 
     if (!user.enabled) {
-        return next(new CustomError("Account is not activated. Please activate your account", 400));
+        return next(new CustomError(errorsEnum.ACCOUNT_NOT_ACTIVATED, 400));
     }
 
     sendJwtToClient(user, res);
