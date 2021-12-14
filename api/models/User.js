@@ -95,7 +95,7 @@ const UserSchema = new Schema({
             ref: "User"
         }
     ], //bu kullanıcının attığı istekler
-    sessionJwtTokens: [
+    sessionTokens: [
         { type: String }
     ],
     changeEmailCode: {

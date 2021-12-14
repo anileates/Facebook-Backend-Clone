@@ -22,6 +22,7 @@ const sendJwtToClient = async (user, res) => {
         });
 };
 
+// Checks if the authorization token is included in the header or not.
 const isTokenIncluded = req => {
     return req.headers.authorization && req.headers.authorization.startsWith("Bearer:");
 };

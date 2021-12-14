@@ -3,31 +3,34 @@ const CustomError = require('../../helpers/errorHelpers/CustomError');
 const jwt = require('jsonwebtoken');
 const asyncErrorWrapper = require('express-async-handler');
 const User = require('../../models/User');
+const errorsEnum = require("../../helpers/errorHelpers/errorsEnum");
 
 /**
- * Bu metod, istek ile gelen access_token'ı kontrol eder. İçerisindeki veri ile kullanıcı kimliğini doğrularız ve bu kimlik loggedUser olarak tutulur.
+ * This method verifies the given token by @JWT_SECRET_KEY.
+ * If verification is valid then pass the @decodedUserInfos to the next via req.loggedUser
  */
 const getAccessToRoute = (req, res, next) => {
     const { JWT_SECRET_KEY } = process.env;
+
     if (!isTokenIncluded(req)) {
-        return next(new CustomError("You are not authorized to access this route", 401));
+        return next(new CustomError(errorsEnum.NOT_AUTHORIZED, 401, 'Make sure that the auth. token is included'));
     }
 
     const accessToken = getAccessTokenFromHeader(req);
-    
-    jwt.verify(accessToken, JWT_SECRET_KEY, async (err, decoded) => {
+
+    jwt.verify(accessToken, JWT_SECRET_KEY, async (err, decodedUserInfos) => {
         if (err) {
-            return next(new CustomError("You are not authorized to access this route", 401));
+            return next(new CustomError(errorsEnum.NOT_AUTHORIZED, 401));
         }
 
-        let user = await User.findById(decoded.id).select('sessionJwtTokens');
-        if(!user.sessionJwtTokens.includes(accessToken)){
-            return next(new CustomError("You are not authorized to access this route", 401));
+        let user = await User.findById(decodedUserInfos.id).select('sessionTokens');
+        if (!user.sessionTokens.includes(accessToken)) {
+            return next(new CustomError(errorsEnum.NOT_AUTHORIZED, 401));
         }
 
         req.loggedUser = {
-            id: decoded.id,
-            email: decoded.email
+            id: decodedUserInfos.id,
+            email: decodedUserInfos.email
         };
 
         next();
@@ -37,8 +40,8 @@ const getAccessToRoute = (req, res, next) => {
 const getPostOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
     const postOwnerId = req.data.userId;
-  
-    if(postOwnerId != userId){
+
+    if (postOwnerId != userId) {
         return next(new CustomError("Only owner can handle this operation.", 400));
     }
 
@@ -49,19 +52,22 @@ const getCommentOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
     const commentOwnerId = req.comment.userId;
 
-    if(commentOwnerId != userId){
+    if (commentOwnerId != userId) {
         return next(new CustomError("Only owner can handle this operation.", 400));
     }
 
     next();
 });
 
+/**
+ * Find sessionToken after logout and delete that token
+ */
 const deleteJwt = asyncErrorWrapper(async (req, res, next) => {
     const accessToken = getAccessTokenFromHeader(req);
 
     let user = await User.findById(req.loggedUser.id).select('sessionJwtTokens');
     let index = user.sessionJwtTokens.indexOf(accessToken);
-    
+
     user.sessionJwtTokens.splice(index, 1);
     await user.save();
 });
