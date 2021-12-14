@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const {register, login, activateAccount, logout, resendActivationMail, forgotPassword, resetPassword, 
-    editPassword, sendChangeMailCode, changeMailAddress} = require('../controllers/auth');
-const {getAccessToRoute, deleteJwt} = require('../middlewares/authorization/authMiddlewares')
+const { register, login, activateAccount, logout, resendActivationMail, forgotPassword, resetPassword,
+    editPassword, sendChangeMailCode, changeMailAddress } = require('../controllers/auth');
+const { getAccessToRoute, deleteJwt } = require('../middlewares/authorization/authMiddlewares')
 
 //.../api/auth/...
 
 router.post("/register", register);
 router.get("/activate-account", activateAccount);
-router.post("/resendActivationMail", resendActivationMail);
+router.post("/resend-activation-mail", resendActivationMail);
 
 router.post("/login", login);
 router.post("/logout", getAccessToRoute, logout, deleteJwt);

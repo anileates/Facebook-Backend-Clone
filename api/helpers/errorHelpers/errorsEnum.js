@@ -34,6 +34,14 @@ const errorsEnum = {
     EMAIL_ERROR: {
         type: 'smtp/smtp-error',
         message: 'Couldn\'t send email. Try again later.'
+    },
+    USER_NOT_FOUND: {
+        type: 'not-found/user-not-found',
+        message: 'User not found with given information(s).'
+    },
+    ACCOUNT_ALREADY_ACTIVATED: {
+        type: 'warn/already-activated',
+        message: 'Account already activated'
     }
 }
 

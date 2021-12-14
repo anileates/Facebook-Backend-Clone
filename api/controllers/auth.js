@@ -92,14 +92,14 @@ const logout = asyncErrorWrapper(async (req, res, next) => {
 const resendActivationMail = asyncErrorWrapper(async (req, res, next) => {
     const { email } = req.body;
 
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ email });
 
     if (!user) {
-        return next(new CustomError("There is no user with that email - " + resetEmail), 400);
+        return next(new CustomError(errorsEnum.USER_NOT_FOUND, 400));
     }
 
     if (user.enabled) {
-        return next(new CustomError("Account already activated.", 400));
+        return next(new CustomError(errorsEnum.ACCOUNT_ALREADY_ACTIVATED, 400));
     }
 
     res.locals.message = "Activation Mail resent";
