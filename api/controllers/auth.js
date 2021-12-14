@@ -107,17 +107,17 @@ const resendActivationMail = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const forgotPassword = asyncErrorWrapper(async (req, res, next) => {
-    const resetEmail = req.body.email;
-    const user = await User.findOne({ email: resetEmail });
+    const { email } = req.body;
+    const user = await User.findOne({ email });
 
     if (!user) {
-        return next(new CustomError("There is no user with that email - " + resetEmail), 400);
+        return next(new CustomError(errorsEnum.USER_NOT_FOUND, 400));
     }
 
     const resetPasswordToken = user.generateResetPasswordTokenFromUser();
     await user.save();
 
-    const resetPasswordUrl = `http://localhost:5000/api/auth/resetPassword?resetPasswordToken=${resetPasswordToken}`;
+    const resetPasswordUrl = `${process.env.DOMAIN}${process.env.API_PATH}/auth/resetPassword?resetPasswordToken=${resetPasswordToken}`;
 
     const emailTemplate = `
     <h3>Reset Your Password</h3>
@@ -144,25 +144,28 @@ const forgotPassword = asyncErrorWrapper(async (req, res, next) => {
 
         await user.save();
 
-        return next(new CustomError("Email Could Not Be Sent", 500));
+        return next(new CustomError(errorsEnum.EMAIL_ERROR, 500));
     }
 });
 
 const resetPassword = asyncErrorWrapper(async (req, res, next) => {
+    /**
+     * @logoutEverywhere is a boolean that references if user wants to log out sessions or not
+     */
     const { resetPasswordToken } = req.query;
     const { newPassword, logoutEverywhere } = req.body;
 
     if (!resetPasswordToken) {
-        return next(new CustomError("Please provide a valid token", 400));
+        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400));
     }
 
     let user = await User.findOne({
         resetPasswordToken: resetPasswordToken,
-        resetPasswordExpire: { $gt: Date.now() } //gt= greater than sorgu
+        resetPasswordExpire: { $gt: Date.now() } //gt = greater than
     });
 
     if (!user) {
-        return next(new CustomError("Invalid token or token expired", 400));
+        return next(new CustomError(errorsEnum.INVALID_TOKEN, 400));
     }
 
     if (logoutEverywhere) {
@@ -177,21 +180,24 @@ const resetPassword = asyncErrorWrapper(async (req, res, next) => {
 
     res.status(200).json({
         success: true,
-        message: "Password changed successfully"
+        message: "Password has been successfully changed."
     });
 });
 
 const editPassword = asyncErrorWrapper(async (req, res, next) => {
+    /**
+     * @logoutEverywhere is a boolean that references if user wants to log out sessions or not
+     */
     const { oldPassword, newPassword, logoutEverywhere } = req.body;
 
     if (!validateUserInputs(oldPassword, newPassword)) {
-        return next(new CustomError("Check your inputs", 400));
+        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400));
     }
 
     let user = await User.findById(req.loggedUser.id).select('+password');
 
     if (!comparePasswords(oldPassword, user.password)) {
-        return next(new CustomError("Current Password is not valid", 400));
+        return next(new CustomError(errorsEnum.INVALID_CURRENT_PASSWORD, 400));
     }
 
     if (logoutEverywhere) {

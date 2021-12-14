@@ -13,9 +13,9 @@ router.post("/resend-activation-mail", resendActivationMail);
 router.post("/login", login);
 router.post("/logout", getAccessToRoute, logout, deleteJwt);
 
-router.post("/forgotpassword", forgotPassword);
-router.put("/resetpassword", resetPassword);
-router.put("/editPassword", getAccessToRoute, editPassword);
+router.post("/forgot-password", forgotPassword);
+router.put("/reset-password", resetPassword);
+router.put("/edit-password", getAccessToRoute, editPassword);
 
 router.put("/sendChangeMailCode", getAccessToRoute, sendChangeMailCode);
 router.put("/changeMailAddress", getAccessToRoute, changeMailAddress);

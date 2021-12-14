@@ -49,7 +49,19 @@ const errorsEnum = {
     },
     INVALID_INPUTS: {
         type: 'validation/invalid-inputs',
-        message: 'Check your credentials'
+        message: 'Check your inputs'
+    },
+    NOT_AUTHORIZED: {
+        type: 'auth/unauthorized-request',
+        message: 'You are not authorized to access this route.'
+    },
+    INVALID_TOKEN: {
+        type: 'validation/invalid-token',
+        message: 'Token is not valid or expired'
+    },
+    INVALID_CURRENT_PASSWORD: {
+        type: 'auth/invalid-current-password',
+        message: 'Current Password is not valid'
     }
 }
 
