@@ -66,7 +66,7 @@ const uploadProfileImage = asyncErrorWrapper(async (req, res, next) => {
     }
 
     const user = await User.findByIdAndUpdate(userId, {
-        "profile_image": req.file.filename
+        "profile_image": req.file.filename || undefined
     }, {
         new: true,
         runValidators: true
@@ -82,11 +82,11 @@ const uploadCoverImage = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
 
     if (!req.file) {
-        return next(new CustomError('Please provide a valid image', 400));
+        return res.sendStatus(200);
     }
 
     const user = await User.findByIdAndUpdate(userId, {
-        "cover_image": req.file.filename
+        "cover_image": req.file.filename || undefined
     }, {
         new: true,
         runValidators: true
@@ -94,7 +94,7 @@ const uploadCoverImage = asyncErrorWrapper(async (req, res, next) => {
 
     res.status(200).json({
         success: true,
-        message: "Cover Image Uploaded."
+        user
     });
 });
 
