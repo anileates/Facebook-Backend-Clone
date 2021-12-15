@@ -62,7 +62,7 @@ const uploadProfileImage = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
 
     if (!req.file) {
-        return next(new CustomError('Please provide a valid image', 400));
+        return res.sendStatus(200);
     }
 
     const user = await User.findByIdAndUpdate(userId, {
@@ -74,7 +74,7 @@ const uploadProfileImage = asyncErrorWrapper(async (req, res, next) => {
 
     res.status(200).json({
         success: true,
-        message: "Profile Image Uploaded."
+        user
     });
 });
 

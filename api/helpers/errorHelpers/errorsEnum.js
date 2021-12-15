@@ -74,6 +74,10 @@ const errorsEnum = {
     FORBIDDEN_FIELD: {
         type: 'auth/forbidden-field',
         message: 'You are not allowed to change this property via this route.'
+    },
+    INVALID_MIME_TYPE: {
+        type: 'validation/invalid-mime-type',
+        message: 'Provide a valid mime type. \nAllowed mime types: JPG, JPEG, GIF, PNG'
     }
 }
 
