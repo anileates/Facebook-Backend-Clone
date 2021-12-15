@@ -1,12 +1,18 @@
 const User = require('../models/User');
 const CustomError = require('../helpers/errorHelpers/CustomError');
 const asyncErrorWrapper = require('express-async-handler');
+const errorsEnum = require('../helpers/errorHelpers/errorsEnum');
 
+/**
+ * @getBasics method returns basic information to be displayed at the navbar. Like name, profile photo notifications etc...
+ */
 const getBasics = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
 
-    const user = await User.find({ _id: userId }).select('firstName lastName pendingFriendRequests profile_image cover_image')
-    .where('pendingFriendRequests').populate({ path: 'pendingFriendRequests', select: 'firstName lastName profile_image cover_image' });
+    const user =
+        await User.find({ _id: userId })
+            .select('firstName lastName pendingFriendRequests profile_image cover_image')
+            .populate({ path: 'pendingFriendRequests', select: 'firstName lastName profile_image cover_image' });
 
     res.status(200).json({
         success: true,
@@ -17,7 +23,10 @@ const getBasics = asyncErrorWrapper(async (req, res, next) => {
 const getSelfProfile = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
 
-    const user = await User.findById(userId).select('-enabled -activateAccToken -password -createdAt -homePageStatus -sharedPosts -__v -sessionJwtTokens').populate({ path: 'friends', select: 'firstName lastName profile_image cover_image' });
+    const user =
+        await User.findById(userId)
+            .select('-enabled -accountActivationToken -password -createdAt -homePageStatus -sharedPosts -__v -sessionTokens')
+            .populate({ path: 'friends', select: 'firstName lastName profile_image cover_image' });
 
     res.status(200).json({
         success: true,
@@ -26,21 +35,20 @@ const getSelfProfile = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const editPersonalData = asyncErrorWrapper(async (req, res, next) => {
-    // kişisel bilgiler ile güvenlik bilgileri farklı route'larda değiştirilecektir.
-    // forbiddenPlaces: güvenlik ile ilgili alanların erişime kısıtlanması içindir.
-    const forbiddenPlaces = ["email", "password", "resetPasswordToken", "resetPasswordExpire", "createdAt",
-        "enabled", '__v', 'profile_image', 'cover_image', 'activateAccToken', 'homePageStatus', 'sharedPosts', 'friends', 'pendingFriendRequests'];
+    /**
+     * @allowedPlaces array contains the places allowed to change from this route. 
+     * Implemented this so that we can restrict access to important places about authorization. 
+     */
+    const allowedPlaces = ['firstName', 'lastName', 'birthday', 'gender', 'relationShip', 'currentCity', 'hometown'];
     const updated = req.body;
 
     let user = await User.findById(req.loggedUser.id);
 
-    for (let key in updated) {
-        if (forbiddenPlaces.includes(key)) {
-            return next(new CustomError("Something went wrong: Forbidden field.", 400));
-        }
+    updated.foreach(element => {
+        if (!allowedPlaces.includes(element)) return next(new CustomError(errorsEnum.FORBIDDEN_FIELD, 400))
 
-        user[key] = updated[key];
-    }
+        user[element] = updated[element]
+    })
 
     await user.save();
 
@@ -120,8 +128,8 @@ const getHomePagePosts = asyncErrorWrapper(async (req, res, next) => {
     }
 
     let posts = await User.find({ _id: userId }).select('-_id homePageStatus')
-    .where('homePageStatus').slice(startIndex, limit)
-    .populate({ path: 'homePageStatus', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
+        .where('homePageStatus').slice(startIndex, limit)
+        .populate({ path: 'homePageStatus', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
 
     let postsArrayObject = posts[0].homePageStatus.toObject();
 
@@ -162,8 +170,8 @@ const getSharedPosts = asyncErrorWrapper(async (req, res, next) => {
     }
 
     let posts = await User.find({ _id: userId }).select('-_id sharedPosts')
-    .where('sharedPosts').slice(startIndex, limit)
-    .populate({ path: 'sharedPosts', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
+        .where('sharedPosts').slice(startIndex, limit)
+        .populate({ path: 'sharedPosts', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
 
     let postsArrayObject = posts[0].sharedPosts.toObject();
     res.status(200).json({

@@ -70,6 +70,10 @@ const errorsEnum = {
     INVALIDE_CODE: {
         type: 'validation/invalid-code',
         message: 'Confirmation code is not valid.'
+    },
+    FORBIDDEN_FIELD: {
+        type: 'auth/forbidden-field',
+        message: 'You are not allowed to change this property via this route.'
     }
 }
 
