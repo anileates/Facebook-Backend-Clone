@@ -212,16 +212,16 @@ const editPassword = asyncErrorWrapper(async (req, res, next) => {
     });
 });
 
-const sendChangeMailCode = asyncErrorWrapper(async (req, res, next) => {
+const requestMailChange = asyncErrorWrapper(async (req, res, next) => {
     const { password, newEmail } = req.body;
     const user = await User.findById(req.loggedUser.id).select('+password');
 
     if (!(password && newEmail)) {
-        return next(new CustomError("check your inputs", 400));
+        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400));
     }
 
     if (!comparePasswords(password, user.password)) {
-        return next(new CustomError("Password is not valid", 400));
+        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400));
     }
 
     const confirmationCode = user.generateChangeEmailCode();
@@ -246,28 +246,28 @@ const sendChangeMailCode = asyncErrorWrapper(async (req, res, next) => {
         })
     }
     catch (err) {
-        return next(new CustomError("Email Could Not Be Sent", 500));
+        return next(new CustomError(errorsEnum.EMAIL_ERROR, 500));
     }
 });
 
 const changeMailAddress = asyncErrorWrapper(async (req, res, next) => {
     const { newEmail, confirmationCode } = req.body;
 
-    let ourUser = await User.findById(req.loggedUser.id);
-    if (confirmationCode != ourUser.changeEmailCode) {
-        return next(new CustomError('Confirmation code is not valid.', 403));
+    let user = await User.findById(req.loggedUser.id);
+    if (confirmationCode != user.changeEmailCode) {
+        return next(new CustomError(errorsEnum.INVALIDE_CODE, 403));
     }
 
-    let user = await User.findOne({ email: newEmail });
-    if (user) {
-        return next(new CustomError("This e-mail adress already in use.", 400));
+    const isAlreadyTaken = await User.exists({ email: newEmail });
+    if (isAlreadyTaken) {
+        return next(new CustomError(errorsEnum.EMAIL_IS_ALREADY_TAKEN, 400));
     }
 
-    ourUser.email = newEmail;
-    ourUser.changeEmailCode = undefined;
-    await ourUser.save();
+    user.email = newEmail;
+    user.changeEmailCode = undefined;
+    await user.save();
 
-    res.status(200).json({
+    return res.status(200).json({
         success: true,
         message: "Mail address succesfully changed."
     });
@@ -282,6 +282,6 @@ module.exports = {
     forgotPassword,
     resetPassword,
     editPassword,
-    sendChangeMailCode,
+    requestMailChange,
     changeMailAddress
 };

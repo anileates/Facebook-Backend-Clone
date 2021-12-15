@@ -62,6 +62,14 @@ const errorsEnum = {
     INVALID_CURRENT_PASSWORD: {
         type: 'auth/invalid-current-password',
         message: 'Current Password is not valid'
+    },
+    EMAIL_IS_ALREADY_TAKEN: {
+        type: 'auth/email-already-taken',
+        message: 'This e-mail adress already in use.'
+    },
+    INVALIDE_CODE: {
+        type: 'validation/invalid-code',
+        message: 'Confirmation code is not valid.'
     }
 }
 
