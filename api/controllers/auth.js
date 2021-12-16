@@ -64,7 +64,7 @@ const login = asyncErrorWrapper(async (req, res, next) => {
 
     //Compares hashed pw and user input by bcrypt
     if (!user || !comparePasswords(password, user.password)) {
-        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400));
+        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400)); // TODO change errorCode with BadCredentials
     }
 
     if (!user.enabled) {
@@ -224,7 +224,7 @@ const requestMailChange = asyncErrorWrapper(async (req, res, next) => {
         return next(new CustomError(errorsEnum.INVALID_INPUTS, 400));
     }
 
-    const confirmationCode = user.generateChangeEmailCode();
+    const confirmationCode = user.generateemailChangingCode();
     await user.save();
 
     const emailTemplate = `
@@ -254,7 +254,7 @@ const changeMailAddress = asyncErrorWrapper(async (req, res, next) => {
     const { newEmail, confirmationCode } = req.body;
 
     let user = await User.findById(req.loggedUser.id);
-    if (confirmationCode != user.changeEmailCode) {
+    if (confirmationCode != user.emailChangingCode) {
         return next(new CustomError(errorsEnum.INVALIDE_CODE, 403));
     }
 
@@ -264,7 +264,7 @@ const changeMailAddress = asyncErrorWrapper(async (req, res, next) => {
     }
 
     user.email = newEmail;
-    user.changeEmailCode = undefined;
+    user.emailChangingCode = undefined;
     await user.save();
 
     return res.status(200).json({

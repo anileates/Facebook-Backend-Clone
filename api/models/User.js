@@ -98,7 +98,7 @@ const UserSchema = new Schema({
     sessionTokens: [
         { type: String }
     ],
-    changeEmailCode: {
+    emailChangingCode: {
         type: String
     }
 });
@@ -175,10 +175,10 @@ UserSchema.methods.generateteAccountActivationToken = function () {
     return accountActivationToken;
 }
 
-UserSchema.methods.generateChangeEmailCode = function () {
+UserSchema.methods.generateemailChangingCode = function () {
     const code = Math.floor(100000 + Math.random() * 900000);
 
-    this.changeEmailCode = code;
+    this.emailChangingCode = code;
     return code;
 }
 
