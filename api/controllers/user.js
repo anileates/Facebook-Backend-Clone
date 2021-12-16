@@ -5,18 +5,18 @@ const checkFriendshipStatus = require('../helpers/libraries/checkFriendshipStatu
 const { request } = require('express');
 
 const getUser = asyncErrorWrapper(async (req, res, next) => {
-    const user = await User.find({ _id: req.data.id }, 'profile_image cover_image friends _id createdAt firstName lastName birthday gender')
-        .populate({ path: 'friends', select: 'firstName lastName profile_image' });
+    const { userId } = req.params.id
 
-    /** Burada arkaşlık durumunu kontrol ediyoruz ve dönüyoruz. Front'ta kullanılması için */
+    const user = await User.findById(userId).select('_id firstName lastName birthday gender profile_image cover_image')
+
+    /** Check friendship status between two profiles. Because this info will be used on Front-end, like making 'Add friend or Unfriend' buttons */
     const mainUser = await User.findById(req.loggedUser.id);
-    
-    let friendShipStatus = checkFriendshipStatus(mainUser, req.data.id);
+    let friendshipStatus = checkFriendshipStatus(mainUser, req.data.id);
 
     res.status(200).json({
         success: true,
         data: user,
-        friendShipStatus
+        friendshipStatus
     });
 });
 
@@ -165,7 +165,7 @@ const cancelRequest = asyncErrorWrapper(async (req, res, next) => {
 
 const denyRequest = asyncErrorWrapper(async (req, res, next) => {
     const requestingUser = req.data;
-    const mainUser = await User.findById(req.loggedUser.id); 
+    const mainUser = await User.findById(req.loggedUser.id);
 
     if (!mainUser.pendingFriendRequests.includes(requestingUser.id)) {
         return next(new CustomError("There is no friend request from this user.", 400));

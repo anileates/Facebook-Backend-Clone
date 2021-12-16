@@ -1,20 +1,20 @@
 const friendShipStatusEnum = {
-	FRIEND: "FRIEND", //arkadaşın
-    REQUEST_SENT: "REQUEST_SENT", //istek atmışsın
-	PENDING: "PENDING", //karşıdan istek gelmiş
-	NONE: "NONE" //hiçbir alaka yok
+    FRIEND: "FRIEND", // Already friend
+    REQUEST_SENT: "REQUEST_SENT", // Already sent a request 
+    PENDING: "PENDING", // Have a pending request from the profile you are viewing
+    NONE: "NONE"
 }
 
 const checkFriendshipStatus = (user, otherUserId) => {
     let friendShipStatus = '';
 
-    if(user.friends.includes(otherUserId)){ //arkadas mi
+    if (user.friends.includes(otherUserId)) {
         friendShipStatus = friendShipStatusEnum.FRIEND
-    }else if(user.pendingFriendRequests.includes(otherUserId)){ //o istek atmis mi
+    } else if (user.pendingFriendRequests.includes(otherUserId)) {
         friendShipStatus = friendShipStatusEnum.PENDING
-    }else if(user.sentFriendRequests.includes(otherUserId)){ //biz istek atmis miyiz
+    } else if (user.sentFriendRequests.includes(otherUserId)) {
         friendShipStatus = friendShipStatusEnum.REQUEST_SENT
-    }else {
+    } else {
         friendShipStatus = friendShipStatusEnum.NONE
     }
 

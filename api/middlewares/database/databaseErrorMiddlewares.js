@@ -3,16 +3,17 @@ const asyncErrorWrapper = require('express-async-handler');
 const User = require('../../models/User');
 const Post = require('../../models/Post');
 const Comment = require('../../models/Comment');
+const errorsEnum = require('../../helpers/errorHelpers/errorsEnum');
 
 /**
- * İlgili kullanıcı db'de var mı diye bakar. Bunu bir çok routta kullanacağımız için bir middleware olarak yapılmıştır.
+ * This middleware checks if the specified user is exist in DB or not.
  */
 const checkUserExist = asyncErrorWrapper(async (req, res, next) => {
     const { userId } = req.params;
 
-    const user = await User.findById(userId).select('-enabled -accountActivationToken'); //çekerken gereksiz yerleri çekmiyoruz
+    const user = await User.exists({ id: userId })
     if (!user) {
-        return next(new CustomError("User not found with that id - " + userId, 400));
+        return next(new CustomError(errorsEnum.USER_NOT_FOUND, 400));
     }
 
     req.data = user;
