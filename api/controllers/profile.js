@@ -130,7 +130,7 @@ const getFeed = asyncErrorWrapper(async (req, res, next) => {
         .where('feed').slice(startIndex, limit)
         .populate({ path: 'feed', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
 
-    let postsArrayObject = posts[0].homePageStatus.toObject();
+    let postsArrayObject = posts[0].feed.toObject();
 
     res.status(200).json({
         success: true,
