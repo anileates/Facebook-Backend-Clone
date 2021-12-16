@@ -63,7 +63,6 @@ const editPersonalData = asyncErrorWrapper(async (req, res, next) => {
 
 const uploadProfileImage = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
-
     if (!req.file) {
         return res.sendStatus(200);
     }

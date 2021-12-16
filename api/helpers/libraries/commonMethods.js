@@ -28,7 +28,6 @@ const sendAccountActivationMail = async (user, res, next) => {
     }
     catch (err) {
         await user.save();
-        console.log('eee')
         return next(new CustomError(errorEnum.EMAIL_ERROR, 500));
     }
 };

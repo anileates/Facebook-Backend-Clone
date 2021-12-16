@@ -6,13 +6,13 @@ const asyncErrorWrapper = require('express-async-handler');
 const createPost = asyncErrorWrapper(async (req, res, next) => {
     const { content } = req.body;
 
-    if(content.trim() === ''){
+    if (content.trim() === '') {
         return next(new CustomError('Post content can not be empty', 400));
     }
 
     let medias = [];
-    if(req.files.media){
-        for(let i = 0; i < req.files.media.length; i++){
+    if (req.files.media) {
+        for (let i = 0; i < req.files.media.length; i++) {
             medias.push(req.files.media[i].filename)
         }
     }
@@ -22,9 +22,9 @@ const createPost = asyncErrorWrapper(async (req, res, next) => {
         content: content,
         media: medias
     });
-   
+
     let user = await User.findById(req.loggedUser.id);
-    
+
     user.homePageStatus.unshift(post.id);
     user.sharedPosts.unshift(post.id);
     await user.save();
@@ -56,10 +56,10 @@ const deletePost = asyncErrorWrapper(async (req, res, next) => {
 
         await friend.save();
     });
-    
+
     await post.remove();
     await user.save();
-    
+
     res.status(200).json({
         succes: true,
         message: "Post successfully deleted"
@@ -72,7 +72,7 @@ const editPost = asyncErrorWrapper(async (req, res, next) => {
 
     let editedPost = await post.save();
     editedPost = editedPost.toObject();
-   
+
     delete editedPost['comments']
     delete editedPost['likes']
     delete editedPost['__v']
@@ -88,7 +88,7 @@ const likePost = asyncErrorWrapper(async (req, res, next) => {
     const post = req.data;
     const user = req.loggedUser;
 
-    if(post.likes.includes(user.id)){
+    if (post.likes.includes(user.id)) {
         return next(new CustomError("You already liked this post", 400));
     }
 
@@ -106,7 +106,7 @@ const undoLikePost = asyncErrorWrapper(async (req, res, next) => {
     const post = req.data;
     const user = req.loggedUser;
 
-    if(!post.likes.includes(user.id)){
+    if (!post.likes.includes(user.id)) {
         return next(new CustomError("You already did not like this post", 400));
     }
 
