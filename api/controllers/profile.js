@@ -73,7 +73,7 @@ const uploadProfileImage = asyncErrorWrapper(async (req, res, next) => {
     }, {
         new: true,
         runValidators: true
-    });
+    }).select('profile_image');
 
     res.status(200).json({
         success: true,
@@ -93,7 +93,7 @@ const uploadCoverImage = asyncErrorWrapper(async (req, res, next) => {
     }, {
         new: true,
         runValidators: true
-    });
+    }).select('profile_image');
 
     res.status(200).json({
         success: true,
