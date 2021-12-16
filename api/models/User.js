@@ -113,7 +113,7 @@ UserSchema.methods.generateJwtFromUser = function () {
     };
 
     const token = jwt.sign(payload, JWT_SECRET_KEY);
-    this.sessionJwtTokens.push(token);
+    this.sessionTokens.push(token);
     return token;
 };
 

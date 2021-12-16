@@ -2,7 +2,7 @@ const sendMail = require('../libraries/sendEmail');
 const CustomError = require('../errorHelpers/CustomError');
 const errorEnum = require('../errorHelpers/errorsEnum')
 
-const sendAccountActivationMail =  async (user, res, next)  => {
+const sendAccountActivationMail = async (user, res, next) => {
     const accountActivationToken = user.generateteAccountActivationToken();
     await user.save();
 
@@ -23,14 +23,14 @@ const sendAccountActivationMail =  async (user, res, next)  => {
 
         return res.status(200).json({
             success: true,
-            message: res.message 
+            message: res.message
         });
     }
     catch (err) {
         await user.save();
-
+        console.log('eee')
         return next(new CustomError(errorEnum.EMAIL_ERROR, 500));
-    }   
+    }
 };
 
 module.exports = {
