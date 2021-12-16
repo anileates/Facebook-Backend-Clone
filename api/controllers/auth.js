@@ -117,7 +117,7 @@ const forgotPassword = asyncErrorWrapper(async (req, res, next) => {
     const resetPasswordToken = user.generateResetPasswordTokenFromUser();
     await user.save();
 
-    const resetPasswordUrl = `${process.env.DOMAIN}${process.env.API_PATH}/auth/resetPassword?resetPasswordToken=${resetPasswordToken}`;
+    const resetPasswordUrl = `${process.env.DOMAIN}${process.env.API_PATH}/auth/reset-password?resetPasswordToken=${resetPasswordToken}`;
 
     const emailTemplate = `
     <h3>Reset Your Password</h3>
@@ -127,7 +127,7 @@ const forgotPassword = asyncErrorWrapper(async (req, res, next) => {
     try {
         await sendMail({
             from: process.env.SMTP_EMAIL,
-            to: resetEmail,
+            to: email,
             subject: "Reset Password Token",
             html: emailTemplate
         });
@@ -135,7 +135,7 @@ const forgotPassword = asyncErrorWrapper(async (req, res, next) => {
         return res.status(200)
             .json({
                 success: true,
-                message: "Email Sent",
+                message: "Email has been sent",
             });
     }
     catch (err) {
@@ -169,7 +169,7 @@ const resetPassword = asyncErrorWrapper(async (req, res, next) => {
     }
 
     if (logoutEverywhere) {
-        user.sessionJwtTokens = [];
+        user.sessionTokens = [];
     }
 
     user.resetPasswordToken = undefined;
@@ -201,7 +201,7 @@ const editPassword = asyncErrorWrapper(async (req, res, next) => {
     }
 
     if (logoutEverywhere) {
-        user.sessionJwtTokens = [];
+        user.sessionTokens = [];
     }
     user.password = newPassword;
     await user.save();

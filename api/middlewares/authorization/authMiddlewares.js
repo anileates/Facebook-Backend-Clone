@@ -65,10 +65,10 @@ const getCommentOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
 const deleteJwt = asyncErrorWrapper(async (req, res, next) => {
     const accessToken = getAccessTokenFromHeader(req);
 
-    let user = await User.findById(req.loggedUser.id).select('sessionJwtTokens');
-    let index = user.sessionJwtTokens.indexOf(accessToken);
+    let user = await User.findById(req.loggedUser.id).select('sessionTokens');
+    let index = user.sessionTokens.indexOf(accessToken);
 
-    user.sessionJwtTokens.splice(index, 1);
+    user.sessionTokens.splice(index, 1);
     await user.save();
 });
 
