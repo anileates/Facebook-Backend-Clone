@@ -23,10 +23,13 @@ const getBasics = asyncErrorWrapper(async (req, res, next) => {
 const getSelfProfile = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
 
+    /**
+     * Shared Posts are not returned with this route in order to make things fast
+     * Shared Posts must be taken by getSharedPosts route separately
+     */
     const user =
         await User.findById(userId)
-            .select('-enabled -accountActivationToken -password -createdAt -homePageStatus -sharedPosts -__v -sessionTokens')
-            .populate({ path: 'friends', select: 'firstName lastName profile_image cover_image' });
+            .select('firstName lastName profile_image cover_image birthday gender')
 
     res.status(200).json({
         success: true,
