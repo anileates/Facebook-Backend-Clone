@@ -65,18 +65,18 @@ const UserSchema = new Schema({
         default: undefined,
         enum: ['single', 'in a relationship', 'engaged', 'married', 'divorced', 'widowed']
     },
-    homePageStatus: [
+    feed: [
         {
             type: mongoose.Schema.ObjectId,
             ref: "Post"
         }
-    ], //ana sayfada görüntülenecek gönderiler. Bir nevi anasayfası
+    ],
     sharedPosts: [
         {
             type: mongoose.Schema.ObjectId,
             ref: "Post"
         }
-    ], //kendi paylaştığı gönderiler
+    ],
     friends: [
         {
             type: mongoose.Schema.ObjectId,
@@ -88,13 +88,13 @@ const UserSchema = new Schema({
             type: mongoose.Schema.ObjectId,
             ref: "User"
         }
-    ], //bu kullanıcıya gelen arkadaşlık istekleri
+    ],
     sentFriendRequests: [
         {
             type: mongoose.Schema.ObjectId,
             ref: "User"
         }
-    ], //bu kullanıcının attığı istekler
+    ],
     sessionTokens: [
         { type: String }
     ],

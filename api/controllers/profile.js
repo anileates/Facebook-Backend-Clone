@@ -98,7 +98,7 @@ const uploadCoverImage = asyncErrorWrapper(async (req, res, next) => {
     });
 });
 
-const getHomePagePosts = asyncErrorWrapper(async (req, res, next) => {
+const getFeed = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
     //Pagination
     const page = parseInt(req.query.page) || 1;
@@ -110,7 +110,7 @@ const getHomePagePosts = asyncErrorWrapper(async (req, res, next) => {
     const pagination = {};
     const user = await User.findById(userId);
 
-    const totalPost = user.homePageStatus.length;
+    const totalPost = user.feed.length;
 
     if (startIndex > 0) {
         pagination.previous = {
@@ -118,18 +118,17 @@ const getHomePagePosts = asyncErrorWrapper(async (req, res, next) => {
             limit: limit
         }
     }
-    console.log(endIndex, totalPost)
+
     if (endIndex < totalPost) {
-        console.log('if ici')
         pagination.next = {
             page: page + 1,
             limit: limit
         }
     }
 
-    let posts = await User.find({ _id: userId }).select('-_id homePageStatus')
-        .where('homePageStatus').slice(startIndex, limit)
-        .populate({ path: 'homePageStatus', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
+    let posts = await User.find({ _id: userId }).select('-_id feed')
+        .where('feed').slice(startIndex, limit)
+        .populate({ path: 'feed', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
 
     let postsArrayObject = posts[0].homePageStatus.toObject();
 
@@ -174,6 +173,7 @@ const getSharedPosts = asyncErrorWrapper(async (req, res, next) => {
         .populate({ path: 'sharedPosts', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
 
     let postsArrayObject = posts[0].sharedPosts.toObject();
+
     res.status(200).json({
         success: true,
         pagination: pagination,
@@ -187,6 +187,6 @@ module.exports = {
     editPersonalData,
     uploadProfileImage,
     uploadCoverImage,
-    getHomePagePosts,
+    getFeed,
     getSharedPosts
 };
