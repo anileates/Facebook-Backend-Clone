@@ -142,7 +142,7 @@ const searchUser = asyncErrorWrapper(async (req, res, next) => {
     if (req.query.search && req.query.search.trim() !== '') {
         const searchObject = [];
 
-        const regex = new RegExp(req.query.search, "i"); //i, case sens. kapatır
+        const regex = new RegExp(req.query.search, "i"); //i, turn off case sensitivity
 
         searchObject.push({ firstName: regex })
         searchObject.push({ lastName: regex })
@@ -158,23 +158,36 @@ const searchUser = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const cancelRequest = asyncErrorWrapper(async (req, res, next) => {
-    const userToRequest = req.data;
-    const requestingUser = await User.findById(req.loggedUser.id);
+    const session = await mongoose.startSession()
 
-    if (!userToRequest.pendingFriendRequests.includes(req.loggedUser.id)) {
-        return next(new CustomError("You haven't sent request to this user or user accepted your request", 400));
+    const canceller = await User.findById(req.loggedUser.id, null, { session });
+    const userToCancel = await User.findById(req.params.userId, null, { session })
+
+    if (!canceller.sentFriendRequests.includes(userToCancel.id)) {
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, "You haven't sent request to this user or user accepted your request"));
     }
 
-    userToRequest.pendingFriendRequests.splice(userToRequest.friends.indexOf(req.loggedUser.id), 1);
-    await userToRequest.save();
+    try {
+        session.startTransaction()
 
-    requestingUser.sentFriendRequests.splice(requestingUser.sentFriendRequests.indexOf(userToRequest.id), 1);
-    await requestingUser.save();
+        userToCancel.pendingFriendRequests.splice(userToCancel.friends.indexOf(req.loggedUser.id), 1);
+        await userToCancel.save();
 
-    res.status(200).json({
-        success: true,
-        message: "Request succesfully cancelled"
-    });
+        canceller.sentFriendRequests.splice(canceller.sentFriendRequests.indexOf(userToCancel.id), 1);
+        await canceller.save();
+
+        await session.commitTransaction()
+        res.status(200).json({
+            success: true,
+            message: "Request succesfully cancelled"
+        });
+    } catch (error) {
+        await session.abortTransaction()
+
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+    }
+
+    return session.endSession()
 });
 
 const denyRequest = asyncErrorWrapper(async (req, res, next) => {
