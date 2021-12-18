@@ -50,7 +50,7 @@ const addFriend = asyncErrorWrapper(async (req, res, next) => {
         reciever.pendingFriendRequests.push(requester.id);
         await reciever.save();
 
-        requester.sentFriendRequests.psh(reciever.id);
+        requester.sentFriendRequests.push(reciever.id);
         await requester.save();
 
         await session.commitTransaction()
@@ -68,41 +68,39 @@ const addFriend = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const acceptFriendRequest = asyncErrorWrapper(async (req, res, next) => {
-    const requestingUser = req.data;
-    const { id } = req.loggedUser;
+    const session = await mongoose.startSession()
 
-    let acceptingUser = await User.findById(id);
+    const acceptingUser = await User.findById(req.loggedUser.id, null, { session });
+    const sender = await User.findById(req.params.userId, null, { session })
 
-    if (acceptingUser.friends.includes(requestingUser.id)) {
-        return next(new CustomError("User is already your friend", 400));
+    if (!acceptingUser.pendingFriendRequests.includes(sender.id)) {
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'There is no friend request from this user.'))
     }
-
-    if (!acceptingUser.pendingFriendRequests.includes(requestingUser.id)) {
-        return next(new CustomError("No such friend request", 400));
-    }
-
-    acceptingUser.pendingFriendRequests.splice(acceptingUser.pendingFriendRequests.indexOf(requestingUser.id), 1);
-    acceptingUser.friends.push(requestingUser.id);
-    await acceptingUser.save();
-
-    requestingUser.friends.push(acceptingUser.id);
-    requestingUser.sentFriendRequests.splice(requestingUser.sentFriendRequests.indexOf(acceptingUser.id), 1);
 
     try {
-        await requestingUser.save();
+        session.startTransaction()
 
-        res.status(200).json({
-            success: true,
-            message: "Request Accepted Succesfully."
-        });
-    } catch (error) {
-        acceptingUser.pendingFriendRequests.push(requestingUser.id);
-        acceptingUser.friends.splice(acceptingUser.friends.indexOf(requestingUser.id), 1);
-
+        acceptingUser.pendingFriendRequests.splice(acceptingUser.pendingFriendRequests.indexOf(sender.id), 1)
+        acceptingUser.friends.push(sender.id);
         await acceptingUser.save();
 
-        return next(new CustomError("Sth went wrong. Try later.", 500));
+        sender.sentFriendRequests.splice(sender.sentFriendRequests.indexOf(acceptingUser.id), 1)
+        sender.friends.push(acceptingUser.id)
+        await sender.save()
+
+        await session.commitTransaction()
+        res.status(200).json({
+            success: true,
+            message: 'Friend request accepted'
+        })
+    } catch (error) {
+        await session.abortTransaction()
+
+        console.log(error)
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
     }
+    session.endSession()
+    return
 });
 
 const unfriend = asyncErrorWrapper(async (req, res, next) => {
