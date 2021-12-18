@@ -3,6 +3,8 @@ const CustomError = require('../helpers/errorHelpers/CustomError');
 const asyncErrorWrapper = require('express-async-handler');
 const checkFriendshipStatus = require('../helpers/libraries/checkFriendshipStatus');
 const { request } = require('express');
+const errorsEnum = require('../helpers/errorHelpers/errorsEnum');
+const mongoose = require('mongoose')
 
 const getUser = asyncErrorWrapper(async (req, res, next) => {
     const { userId } = req.params.id
@@ -21,35 +23,49 @@ const getUser = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const addFriend = asyncErrorWrapper(async (req, res, next) => {
-    const userToRequest = req.data;
-    const requestingUser = await User.findById(req.loggedUser.id);
+    const session = await mongoose.startSession()
 
-    if (requestingUser.id == userToRequest.id) {
-        return next(new CustomError("Playful!", 400));
+    // const reciever = req.isUserExist;
+    const reciever = await User.findById(req.params.userId, null, { session })
+    const requester = await User.findById(req.loggedUser.id, null, { session });
+
+    if (requester.id == reciever.id) {
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'Playful!'));
     }
 
-    if (userToRequest.friends.includes(requestingUser.id)) {
-        return next(new CustomError("The user is already your friend.", 400));
+    if (reciever.friends.includes(requester.id)) {
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'User is already a friend'));
     }
 
-    if (userToRequest.pendingFriendRequests.includes(requestingUser.id)) {
-        return next(new CustomError("You already sent a friend request to this user.", 400));
+    if (reciever.pendingFriendRequests.includes(requester.id)) {
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'You already sent a frind request to this user.'));
     }
 
-    if (requestingUser.pendingFriendRequests.includes(userToRequest.id)) {
-        return next(new CustomError('You have a friend request from this user. Just accept that.', 200));
+    if (requester.pendingFriendRequests.includes(reciever.id)) {
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'You have a friend request from this user. Accept that.'));
     }
 
-    userToRequest.pendingFriendRequests.push(requestingUser.id);
-    await userToRequest.save();
+    try {
+        session.startTransaction()
 
-    requestingUser.sentFriendRequests.push(userToRequest.id);
-    await requestingUser.save();
+        reciever.pendingFriendRequests.push(requester.id);
+        await reciever.save();
 
-    res.status(200).json({
-        success: true,
-        message: "Friend request sent."
-    });
+        requester.sentFriendRequests.push(reciever.id);
+        await requester.save();
+
+        await session.commitTransaction()
+        res.status(200).json({
+            success: true,
+            message: "Friend request sent."
+        });
+    } catch (error) {
+        await session.abortTransaction()
+
+        return next(new CustomError(errorsEnum.UNEXPECTED_SYNTAX, 500))
+    }
+
+    session.endSession()
 });
 
 const acceptFriendRequest = asyncErrorWrapper(async (req, res, next) => {

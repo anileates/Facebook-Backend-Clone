@@ -11,12 +11,11 @@ const errorsEnum = require('../../helpers/errorHelpers/errorsEnum');
 const checkUserExist = asyncErrorWrapper(async (req, res, next) => {
     const { userId } = req.params;
 
-    const user = await User.exists({ id: userId })
+    const user = await User.exists({ _id: userId })
     if (!user) {
         return next(new CustomError(errorsEnum.USER_NOT_FOUND, 400));
     }
 
-    req.data = user;
     next();
 });
 

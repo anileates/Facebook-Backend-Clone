@@ -7,8 +7,8 @@ const { getSharedPosts } = require('../controllers/profile')
 // .../api/users/...
 
 router.get('/:userId', getAccessToRoute, checkUserExist, getUser);
-router.get('/:userId/posts', [getAccessToRoute, checkUserExist], getSharedPosts); 
-router.post('/:userId/addFriend', [getAccessToRoute, checkUserExist], addFriend);
+router.get('/:userId/posts', [getAccessToRoute, checkUserExist], getSharedPosts);
+router.post('/:userId/add-friend', [getAccessToRoute, checkUserExist], addFriend);
 router.post('/:userId/acceptFriendRequest', [getAccessToRoute, checkUserExist], acceptFriendRequest);
 router.post('/:userId/unfriend', [getAccessToRoute, checkUserExist], unfriend);
 router.post('/:userId/cancelFriendRequest', [getAccessToRoute, checkUserExist], cancelRequest);
