@@ -61,10 +61,10 @@ const addFriend = asyncErrorWrapper(async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
 
-        return next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500, error))
     }
 
-    session.endSession()
+    return session.endSession()
 });
 
 const acceptFriendRequest = asyncErrorWrapper(async (req, res, next) => {
@@ -96,10 +96,9 @@ const acceptFriendRequest = asyncErrorWrapper(async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
 
-        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500, error))
     }
-    session.endSession()
-    return
+    return session.endSession()
 });
 
 const unfriend = asyncErrorWrapper(async (req, res, next) => {
@@ -129,7 +128,7 @@ const unfriend = asyncErrorWrapper(async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
 
-        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500, error))
     }
 
     return session.endSession()
@@ -184,7 +183,7 @@ const cancelRequest = asyncErrorWrapper(async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
 
-        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500, error))
     }
 
     return session.endSession()
@@ -217,7 +216,7 @@ const denyRequest = asyncErrorWrapper(async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
 
-        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500, error))
     }
 
     return session.endSession()
