@@ -29,19 +29,19 @@ const addFriend = asyncErrorWrapper(async (req, res, next) => {
     const requester = await User.findById(req.loggedUser.id, null, { session });
 
     if (requester.id == reciever.id) {
-        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'Playful!'));
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST_ERROR, 400, 'Playful!'));
     }
 
     if (reciever.friends.includes(requester.id)) {
-        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'User is already a friend'));
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST_ERROR, 400, 'User is already a friend'));
     }
 
     if (reciever.pendingFriendRequests.includes(requester.id)) {
-        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'You already sent a frind request to this user.'));
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST_ERROR, 400, 'You already sent a frind request to this user.'));
     }
 
     if (requester.pendingFriendRequests.includes(reciever.id)) {
-        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'You have a friend request from this user. Accept that.'));
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST_ERROR, 400, 'You have a friend request from this user. Accept that.'));
     }
 
     try {
@@ -74,7 +74,7 @@ const acceptFriendRequest = asyncErrorWrapper(async (req, res, next) => {
     const sender = await User.findById(req.params.userId, null, { session })
 
     if (!acceptingUser.pendingFriendRequests.includes(sender.id)) {
-        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'There is no friend request from this user.'))
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST_ERROR, 400, 'There is no friend request from this user.'))
     }
 
     try {
@@ -109,7 +109,7 @@ const unfriend = asyncErrorWrapper(async (req, res, next) => {
     const userToUnfriend = await User.findById(req.params.userId, null, { session });
 
     if (!loggedUser.friends.includes(userToUnfriend.id)) {
-        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'User is not your friend'));
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST_ERROR, 400, 'User is not your friend'));
     }
 
     try {
@@ -164,7 +164,7 @@ const cancelRequest = asyncErrorWrapper(async (req, res, next) => {
     const userToCancel = await User.findById(req.params.userId, null, { session })
 
     if (!canceller.sentFriendRequests.includes(userToCancel.id)) {
-        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, "You haven't sent request to this user or user accepted your request"));
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST_ERROR, 400, "You haven't sent request to this user or user accepted your request"));
     }
 
     try {
@@ -191,23 +191,36 @@ const cancelRequest = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const denyRequest = asyncErrorWrapper(async (req, res, next) => {
-    const requestingUser = req.data;
-    const mainUser = await User.findById(req.loggedUser.id);
+    const session = await mongoose.startSession()
 
-    if (!mainUser.pendingFriendRequests.includes(requestingUser.id)) {
-        return next(new CustomError("There is no friend request from this user.", 400));
+    const refuser = await User.findById(req.loggedUser.id, null, { session });
+    const refusedUser = await User.findById(req.params.userId, null, { session });
+
+    if (!refuser.pendingFriendRequests.includes(refusedUser.id)) {
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST_ERROR, 400, "There is no friend request from this user."));
     }
 
-    mainUser.pendingFriendRequests.splice(mainUser.pendingFriendRequests.indexOf(requestingUser.id), 1);
-    await mainUser.save();
+    try {
+        session.startTransaction()
 
-    requestingUser.sentFriendRequests.splice(requestingUser.sentFriendRequests.indexOf(req.loggedUser.id), 1);
-    await requestingUser.save();
+        refuser.pendingFriendRequests.splice(refuser.pendingFriendRequests.indexOf(refusedUser.id), 1);
+        await refuser.save();
 
-    res.status(200).json({
-        success: true,
-        message: "Request Denied"
-    });
+        refusedUser.sentFriendRequests.splice(refusedUser.sentFriendRequests.indexOf(req.loggedUser.id), 1);
+        await refusedUser.save();
+
+        await session.commitTransaction()
+        res.status(200).json({
+            success: true,
+            message: "Request Denied"
+        });
+    } catch (error) {
+        await session.abortTransaction()
+
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+    }
+
+    return session.endSession()
 });
 
 module.exports = {

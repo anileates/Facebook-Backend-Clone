@@ -79,7 +79,7 @@ const errorsEnum = {
         type: 'validation/invalid-mime-type',
         message: 'Provide a valid mime type. \nAllowed mime types: JPG, JPEG, GIF, PNG'
     },
-    FRIEND_REQUEST: {
+    FRIEND_REQUEST_ERROR: {
         type: 'bad-request/bad-friend-requst',
         message: 'Request could not be sent.'
     },
