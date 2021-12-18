@@ -103,34 +103,37 @@ const acceptFriendRequest = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const unfriend = asyncErrorWrapper(async (req, res, next) => {
-    const userToUnfriend = req.data;
-    const loggedUserId = req.loggedUser.id;
+    const session = await mongoose.startSession()
 
-    let loggedUser = await User.findById(loggedUserId);
+    let loggedUser = await User.findById(req.loggedUser.id, null, { session });
+    const userToUnfriend = await User.findById(req.params.userId, null, { session });
 
     if (!loggedUser.friends.includes(userToUnfriend.id)) {
-        return next(new CustomError("User is not your friend", 400));
+        return next(new CustomError(errorsEnum.FRIEND_REQUEST, 400, 'User is not your friend'));
     }
-
-    loggedUser.friends.splice(loggedUser.friends.indexOf(userToUnfriend.id), 1);
-
-    userToUnfriend.friends.splice(userToUnfriend.friends.indexOf(loggedUserId), 1);
-
-    await loggedUser.save();
 
     try {
-        await userToUnfriend.save();
+        session.startTransaction()
 
-        res.status(200).json({
-            success: true,
-            message: "User deleted from friend list"
-        });
-    } catch (error) {
-        loggedUser.friends.push(userToUnfriend.id);
+        loggedUser.friends.splice(loggedUser.friends.indexOf(userToUnfriend.id), 1);
         await loggedUser.save();
 
-        return next(new CustomError("Something went wrong"), 500);
+        userToUnfriend.friends.splice(userToUnfriend.friends.indexOf(loggedUser.id), 1);
+        await userToUnfriend.save()
+
+        await session.commitTransaction()
+        res.status(200).json({
+            success: true,
+            message: 'User removed from friends.'
+        })
+    } catch (error) {
+        await session.abortTransaction()
+
+        console.log(error)
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
     }
+
+    return session.endSession()
 });
 
 const searchUser = asyncErrorWrapper(async (req, res, next) => {

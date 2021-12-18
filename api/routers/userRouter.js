@@ -10,7 +10,7 @@ router.get('/:userId', getAccessToRoute, checkUserExist, getUser);
 router.get('/:userId/posts', [getAccessToRoute, checkUserExist], getSharedPosts);
 router.post('/:userId/add-friend', [getAccessToRoute, checkUserExist], addFriend);
 router.post('/:userId/accept-friend-request', [getAccessToRoute, checkUserExist], acceptFriendRequest);
-router.post('/:userId/unfriend', [getAccessToRoute, checkUserExist], unfriend);
+router.post('/:userId/remove-friend', [getAccessToRoute, checkUserExist], unfriend);
 router.post('/:userId/cancelFriendRequest', [getAccessToRoute, checkUserExist], cancelRequest);
 router.post('/:userId/denyFriendRequest', [getAccessToRoute, checkUserExist], denyRequest);
 router.get('/', getAccessToRoute, searchUser);
