@@ -82,6 +82,10 @@ const errorsEnum = {
     FRIEND_REQUEST: {
         type: 'bad-request/bad-friend-requst',
         message: 'Request could not be sent.'
+    },
+    INTERNAL_ERROR: {
+        type: 'internal-error',
+        message: 'Something went wrong'
     }
 }
 

@@ -4,7 +4,7 @@
  */
 
 class CustomError extends Error {
-    constructor(errorEnum, status, message){
+    constructor(errorEnum, status, message) {
         super(message || errorEnum.message);
         this.type = errorEnum.type;
         this.status = status;

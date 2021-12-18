@@ -25,7 +25,6 @@ const getUser = asyncErrorWrapper(async (req, res, next) => {
 const addFriend = asyncErrorWrapper(async (req, res, next) => {
     const session = await mongoose.startSession()
 
-    // const reciever = req.isUserExist;
     const reciever = await User.findById(req.params.userId, null, { session })
     const requester = await User.findById(req.loggedUser.id, null, { session });
 
@@ -51,7 +50,7 @@ const addFriend = asyncErrorWrapper(async (req, res, next) => {
         reciever.pendingFriendRequests.push(requester.id);
         await reciever.save();
 
-        requester.sentFriendRequests.push(reciever.id);
+        requester.sentFriendRequests.psh(reciever.id);
         await requester.save();
 
         await session.commitTransaction()
@@ -62,7 +61,7 @@ const addFriend = asyncErrorWrapper(async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
 
-        return next(new CustomError(errorsEnum.UNEXPECTED_SYNTAX, 500))
+        return next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
     }
 
     session.endSession()
