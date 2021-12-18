@@ -129,7 +129,6 @@ const unfriend = asyncErrorWrapper(async (req, res, next) => {
     } catch (error) {
         await session.abortTransaction()
 
-        console.log(error)
         next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
     }
 
