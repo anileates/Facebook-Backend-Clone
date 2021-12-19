@@ -11,8 +11,8 @@ router.all('*', getAccessToRoute);
 
 router.post('/', makeComment);
 router.get('/getComments', getMoreComments);
-router.put('/:commentId/edit', checkCommentExists, getCommentOwnerAccess, editComment);
-router.delete('/:commentId/delete', checkCommentExists, getCommentOwnerAccess, deleteComment);
+router.put('/:commentId', checkCommentExists, getCommentOwnerAccess, editComment);
+router.delete('/:commentId', checkCommentExists, getCommentOwnerAccess, deleteComment);
 router.post('/:commentId/like', checkCommentExists, likeAComment);
 router.post('/:commentId/undoLike', checkCommentExists, undoLikeAComment);
 

@@ -50,10 +50,10 @@ const getPostOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
 
 const getCommentOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
-    const commentOwnerId = req.comment.userId;
+    const commentOwnerId = await Comment.findById(req.params.commentId).select('userId').userId;
 
     if (commentOwnerId != userId) {
-        return next(new CustomError("Only owner can handle this operation.", 400));
+        return next(new CustomError(errorsEnum.NOT_AUTHORIZED, 401));
     }
 
     next();

@@ -89,7 +89,7 @@ const makeComment = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const editComment = asyncErrorWrapper(async (req, res, next) => {
-    const comment = req.comment;
+    const comment = await Comment.findById(req.params.commentId);
     const newContent = req.body.content || req.body.newContent;
 
     comment.content = newContent;
@@ -102,9 +102,7 @@ const editComment = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const deleteComment = asyncErrorWrapper(async (req, res, next) => {
-    const {
-        commentId
-    } = req.params;
+    const { commentId } = req.params;
 
     await Comment.findByIdAndDelete(commentId);
 
@@ -115,11 +113,11 @@ const deleteComment = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const likeAComment = asyncErrorWrapper(async (req, res, next) => {
-    const comment = req.comment;
+    const comment = await Comment.findById(req.params.commentId);
     const loggedUser = req.loggedUser;
 
     if (comment.likes.includes(loggedUser.id)) {
-        return next(new CustomError("You are already liked this comment", 400));
+        return res.sendStatus(200)
     }
 
     comment.likes.push(loggedUser.id);
@@ -134,7 +132,7 @@ const likeAComment = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const undoLikeAComment = asyncErrorWrapper(async (req, res, next) => {
-    const comment = req.comment;
+    const comment = await Comment.findById(req.params.commentId);;
     const loggedUser = req.loggedUser;
 
     if (!comment.likes.includes(loggedUser.id)) {
