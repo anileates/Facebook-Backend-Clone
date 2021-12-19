@@ -13,36 +13,38 @@ const checkUserExist = asyncErrorWrapper(async (req, res, next) => {
 
     const user = await User.exists({ _id: userId })
     if (!user) {
-        return next(new CustomError(errorsEnum.USER_NOT_FOUND, 400));
+        return next(new CustomError(errorsEnum.USER_NOT_FOUND, 404));
     }
 
     next();
 });
 
 /**
- * İlgili gönderi db'de var mı diye bakar. Bunu bir çok routta kullanacağımız için bir middleware olarak yapılmıştır.
+ * This middleware checks if the specified post is exist in DB or not..
  */
 const checkPostExist = asyncErrorWrapper(async (req, res, next) => {
-    const postId = req.params.id || req.params.postId || req.params.post_id; // question_id veya id geldiyse onu al. Diger tarafta hepsini degistirmek yerine daha basit
-    const post = await Post.findById(postId);
+    const postId = req.params.id || req.params.postId || req.params.post_id;
 
+    const post = await Post.exists(postId);
     if (!post) {
-        return next(new CustomError("There is no such post with that id - " + postId, 400));
+        return next(new CustomError(errorsEnum.POST_NOT_FOUND, 404));
     }
-    req.data = post;
+
     next();
 });
 
+/**
+ * This middleware checks if the specified comment is exist in DB or not..
+ */
 const checkCommentExists = asyncErrorWrapper(async (req, res, next) => {
     const { commentId } = req.params;
     const postId = req.data.id;
-    const comment = await Comment.findOne({ _id: commentId, postId: postId });
 
+    const comment = await Comment.exists({ _id: commentId, postId: postId });
     if (!comment) {
-        return next(new CustomError(`Comment Not Found with Comment Id : ${commentId} Associated With This Post`, 404));
+        return next(new CustomError(errorsEnum.COMMENT_NOT_FOUND, 404));
     }
 
-    req.comment = comment;
     next();
 });
 

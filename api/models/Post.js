@@ -20,7 +20,7 @@ const PostSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        immutable: true 
+        immutable: true
     },
     comments: [
         {

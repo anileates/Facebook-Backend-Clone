@@ -7,6 +7,7 @@ const errorsEnum = require('../../helpers/errorHelpers/errorsEnum')
 const customErrorHandler = (err, req, res, next) => {
     let customError = err;
 
+    console.log(err)
     if (err.name === 'SyntaxError') {
         customError = new CustomError(errorsEnum.UNEXPECTED_SYNTAX, 400);
     }

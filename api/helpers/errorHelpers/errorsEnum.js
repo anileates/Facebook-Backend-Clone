@@ -86,6 +86,10 @@ const errorsEnum = {
     INTERNAL_ERROR: {
         type: 'internal-error',
         message: 'Something went wrong'
+    },
+    POST_NOT_FOUND: {
+        type: 'not-found/post-not-found',
+        message: 'Post not found with given information(s).'
     }
 }
 
