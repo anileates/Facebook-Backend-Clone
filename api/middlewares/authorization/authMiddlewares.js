@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const asyncErrorWrapper = require('express-async-handler');
 const User = require('../../models/User');
 const errorsEnum = require("../../helpers/errorHelpers/errorsEnum");
+const Post = require("../../models/Post");
 
 /**
  * This method verifies the given token by @JWT_SECRET_KEY.
@@ -39,9 +40,9 @@ const getAccessToRoute = (req, res, next) => {
 
 const getPostOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
-    const postOwnerId = req.data.userId;
+    const post = await Post.findById(req.params.postId);
 
-    if (postOwnerId != userId) {
+    if (post.userId != userId) {
         return next(new CustomError(errorsEnum.NOT_AUTHORIZED, 401));
     }
 

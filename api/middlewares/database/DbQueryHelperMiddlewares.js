@@ -25,7 +25,7 @@ const checkUserExist = asyncErrorWrapper(async (req, res, next) => {
 const checkPostExist = asyncErrorWrapper(async (req, res, next) => {
     const postId = req.params.id || req.params.postId || req.params.post_id;
 
-    const post = await Post.exists(postId);
+    const post = await Post.exists({ _id: postId });
     if (!post) {
         return next(new CustomError(errorsEnum.POST_NOT_FOUND, 404));
     }

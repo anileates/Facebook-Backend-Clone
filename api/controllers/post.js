@@ -20,11 +20,11 @@ const createPost = asyncErrorWrapper(async (req, res, next) => {
     try {
         session.startTransaction()
 
-        const post = await Post.create({
+        const post = await Post.create([{
             userId: req.loggedUser.id,
             content: content,
             media: medias
-        }, { session });
+        }], { session });
 
         let user = await User.findById(req.loggedUser.id, null, { session });
 

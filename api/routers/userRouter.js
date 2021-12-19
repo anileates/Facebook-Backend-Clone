@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getUser, addFriend, acceptFriendRequest, unfriend, searchUser, cancelRequest, denyRequest } = require('../controllers/user');
-const { checkUserExist } = require('../middlewares/database/databaseErrorMiddlewares.js');
+const { checkUserExist } = require('../middlewares/database/DbQueryHelperMiddlewares.js');
 const { getAccessToRoute } = require('../middlewares/authorization/authMiddlewares');
 const { getSharedPosts } = require('../controllers/profile')
 // .../api/users/...
