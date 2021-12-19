@@ -3,6 +3,8 @@ const asyncErrorWrapper = require('express-async-handler');
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
 const User = require('../models/User');
+const errorsEnum = require('../helpers/errorHelpers/errorsEnum');
+const mongoose = require('mongoose')
 
 const getAllComments = asyncErrorWrapper(async (req, res, next) => {
     const post = req.data;
@@ -12,7 +14,7 @@ const getAllComments = asyncErrorWrapper(async (req, res, next) => {
         pagination: pagination,
         data: comments
     })
-   
+
 });
 
 const getMoreComments = asyncErrorWrapper(async (req, res, next) => {
@@ -41,8 +43,8 @@ const getMoreComments = asyncErrorWrapper(async (req, res, next) => {
         }
     }
 
-    Post.populate(post, {path: "comments", populate: { path: "userId", select:"profile_image firstName lastName"}}, function(err, populatedPost){
-        if(err){
+    Post.populate(post, { path: "comments", populate: { path: "userId", select: "profile_image firstName lastName" } }, function (err, populatedPost) {
+        if (err) {
             return next(new CustomError('Something went wrong. Try again later.', 500));
         }
 
@@ -54,31 +56,41 @@ const getMoreComments = asyncErrorWrapper(async (req, res, next) => {
             data: comments
         })
     })
-   
+
 });
 
 const makeComment = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.data;
     const loggedUser = req.loggedUser;
-    
-    if(req.body.content.trim() === ''){
-        return next(new CustomError('Comment content can not be empty', 400));
+
+    if (req.body.content.trim() === '') {
+        return next(new CustomError(errorsEnum.INVALID_CONTENT, 400));
     }
 
-    const comment = await Comment.create({
-        userId: loggedUser.id,
-        postId: post.id,
-        content: req.body.content
-    });
+    const session = await mongoose.startSession()
+    try {
+        session.startTransaction()
 
-    post.comments.push(comment.id);
-    post.commentCount = post.comments.length;
-    await post.save();
+        const post = await Post.findById(req.params.postId);
+        const comment = await Comment.create({
+            userId: loggedUser.id,
+            postId: post.id,
+            content: req.body.content
+        });
 
-    return res.status(200).json({
-        success: true,
-        comment: comment
-    });
+        post.comments.push(comment.id);
+        post.commentCount = post.comments.length;
+        await post.save();
+
+        await session.commitTransaction()
+        return res.status(200).json({
+            success: true,
+            comment
+        });
+    } catch (error) {
+        await session.abortTransaction()
+
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+    }
 });
 
 const editComment = asyncErrorWrapper(async (req, res, next) => {

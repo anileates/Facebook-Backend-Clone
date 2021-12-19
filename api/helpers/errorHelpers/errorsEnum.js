@@ -92,8 +92,8 @@ const errorsEnum = {
         message: 'Post not found with given information(s).'
     },
     INVALID_CONTENT: {
-        type: 'validation/empty-status-content',
-        message: 'Status body can not be empty.'
+        type: 'validation/empty-content',
+        message: 'Content body can not be empty.'
     }
 }
 
