@@ -43,14 +43,16 @@ const getMoreComments = asyncErrorWrapper(async (req, res, next) => {
         }
     }
 
-    let comments = await Post.findById(req.params.postId).select('id comments')
+    let comments = await Post.findById(req.params.postId).select('-_id comments')
         .where('comments').slice(startIndex, limit)
-        .populate({ path: 'comments.userId' })
+        .populate('comments')
         .select('profile_image cover_image firstName lastName')
+
+    let result = comments.comments
 
     return res.status(200).json({
         success: true,
-        comments
+        CustomElementRegistry: result
     })
 });
 

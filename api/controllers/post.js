@@ -146,7 +146,7 @@ const undoLikePost = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const getSinglePost = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.params.postId;
+    const post = await Post.findById(req.params.postId);
 
     return res.status(200).json({
         succes: true,
