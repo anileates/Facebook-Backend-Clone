@@ -18,45 +18,40 @@ const getAllComments = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const getMoreComments = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.data;
-    const totalComment = post.comments.length;
     //Pagination
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || totalComment;
+    const limit = parseInt(req.query.limit) || 10;
 
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
 
     const pagination = {};
+    const post = await Post.findById(req.params.postId)
+    const totalComment = post.comments.length;
 
     if (startIndex > 0) {
         pagination.previous = {
             page: page - 1,
-            limit: limit
+            limit
         }
     }
 
     if (endIndex < totalComment) {
         pagination.next = {
             page: page + 1,
-            limit: limit
+            limit
         }
     }
 
-    Post.populate(post, { path: "comments", populate: { path: "userId", select: "profile_image firstName lastName" } }, function (err, populatedPost) {
-        if (err) {
-            return next(new CustomError('Something went wrong. Try again later.', 500));
-        }
+    let comments = await Post.findById(req.params.postId).select('id comments')
+        .where('comments').slice(startIndex, limit)
+        .populate({ path: 'comments.userId' })
+        .select('profile_image cover_image firstName lastName')
 
-        let comments = populatedPost.comments.splice(startIndex, limit);
-
-        return res.status(200).json({
-            success: true,
-            pagination: pagination,
-            data: comments
-        })
+    return res.status(200).json({
+        success: true,
+        comments
     })
-
 });
 
 const makeComment = asyncErrorWrapper(async (req, res, next) => {
