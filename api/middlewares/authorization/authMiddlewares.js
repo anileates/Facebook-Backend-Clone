@@ -42,7 +42,7 @@ const getPostOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
     const postOwnerId = req.data.userId;
 
     if (postOwnerId != userId) {
-        return next(new CustomError("Only owner can handle this operation.", 400));
+        return next(new CustomError(errorsEnum.NOT_AUTHORIZED, 401));
     }
 
     next();

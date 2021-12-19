@@ -18,7 +18,7 @@ router.post("/create-post", getAccessToRoute, statusImageUpload.fields([
     }
 ]), createPost);
 
-router.delete("/:postId/delete", [getAccessToRoute, checkPostExist, getPostOwnerAccess], deletePost);
+router.delete("/:postId", [getAccessToRoute, checkPostExist, getPostOwnerAccess], deletePost);
 router.put("/:postId/edit", [getAccessToRoute, checkPostExist, getPostOwnerAccess], editPost);
 router.post("/:postId/like", [getAccessToRoute, checkPostExist], likePost);
 router.post("/:postId/undoLike", [getAccessToRoute, checkPostExist], undoLikePost);

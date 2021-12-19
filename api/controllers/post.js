@@ -57,26 +57,39 @@ const createPost = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const deletePost = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.data;
+    const session = await mongoose.startSession()
 
-    let user = await User.findById(post.userId);
-    user.homePageStatus.splice(user.homePageStatus.indexOf(post._id), 1);
-    user.sharedPosts.splice(user.sharedPosts.indexOf(post._id), 1);
+    try {
+        session.startTransaction()
 
-    user.friends.forEach(async (friendId) => {
-        let friend = await User.findById(friendId);
-        friend.homePageStatus.splice(friend.homePageStatus.indexOf(post._id), 1);
+        const post = await Post.findById(req.params.postId);
+        let user = await User.findById(post.userId);
 
-        await friend.save();
-    });
+        user.friends.forEach(async (friendId) => {
+            let friend = await User.findById(friendId);
+            friend.feed.splice(friend.feed.indexOf(post._id), 1);
 
-    await post.remove();
-    await user.save();
+            await friend.save();
+        });
 
-    res.status(200).json({
-        succes: true,
-        message: "Post successfully deleted"
-    });
+        user.feed.splice(user.feed.indexOf(post._id), 1);
+        user.sharedPosts.splice(user.sharedPosts.indexOf(post._id), 1);
+
+        await post.remove();
+        await user.save();
+
+        await session.commitTransaction()
+        res.status(200).json({
+            succes: true,
+            message: "Post successfully deleted"
+        });
+    } catch (error) {
+        await session.abortTransaction()
+
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
+    }
+
+    return session.endSession()
 });
 
 const editPost = asyncErrorWrapper(async (req, res, next) => {
