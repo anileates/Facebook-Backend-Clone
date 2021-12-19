@@ -9,8 +9,8 @@ const { getCommentOwnerAccess } = require('../middlewares/authorization/authMidd
 
 router.all('*', getAccessToRoute);
 
-router.get('/getComments', getMoreComments);
 router.post('/', makeComment);
+router.get('/getComments', getMoreComments);
 router.put('/:commentId/edit', checkCommentExists, getCommentOwnerAccess, editComment);
 router.delete('/:commentId/delete', checkCommentExists, getCommentOwnerAccess, deleteComment);
 router.post('/:commentId/like', checkCommentExists, likeAComment);
