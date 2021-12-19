@@ -9,7 +9,7 @@ const statusImageUpload = require('../middlewares/libraries/statusImageUpload');
 //.../api/posts/...
 
 router.get('/:postId', [getAccessToRoute, checkPostExist], getSinglePost);
-router.post("/createPost", getAccessToRoute, statusImageUpload.fields([
+router.post("/create-post", getAccessToRoute, statusImageUpload.fields([
     {
         name: 'media', maxCount: 3
     },

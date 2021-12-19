@@ -90,6 +90,10 @@ const errorsEnum = {
     POST_NOT_FOUND: {
         type: 'not-found/post-not-found',
         message: 'Post not found with given information(s).'
+    },
+    INVALID_CONTENT: {
+        type: 'validation/empty-status-content',
+        message: 'Status body can not be empty.'
     }
 }
 

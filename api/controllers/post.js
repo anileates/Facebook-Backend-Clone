@@ -2,45 +2,58 @@ const User = require('../models/User');
 const Post = require('../models/Post');
 const CustomError = require('../helpers/errorHelpers/CustomError');
 const asyncErrorWrapper = require('express-async-handler');
+const errorsEnum = require('../helpers/errorHelpers/errorsEnum');
+const mongoose = require('mongoose')
 
 const createPost = asyncErrorWrapper(async (req, res, next) => {
     const { content } = req.body;
 
     if (content.trim() === '') {
-        return next(new CustomError('Post content can not be empty', 400));
+        return next(new CustomError(errorsEnum.INVALID_CONTENT, 400));
     }
 
+    // Get filename to insert DB
     let medias = [];
-    if (req.files.media) {
-        for (let i = 0; i < req.files.media.length; i++) {
-            medias.push(req.files.media[i].filename)
-        }
+    req.files.media.forEach(file => medias.push(file.filename))
+
+    const session = await mongoose.startSession()
+    try {
+        session.startTransaction()
+
+        const post = await Post.create({
+            userId: req.loggedUser.id,
+            content: content,
+            media: medias
+        }, { session });
+
+        let user = await User.findById(req.loggedUser.id, null, { session });
+
+        // Put this post to TOP OF user feeds and homepages 
+        user.feed.unshift(post.id);
+        user.sharedPosts.unshift(post.id);
+        await user.save();
+
+        // Send this post to user friends
+        user.friends.forEach(async (friendId) => {
+            let friend = await User.findById(friendId, null, { session });
+            friend.feed.unshift(post.id);
+
+            await friend.save();
+        });
+
+        await session.commitTransaction()
+        return res.status(200).json({
+            success: true,
+            message: "Post succesfully created",
+            post: post
+        });
+    } catch (error) {
+        await session.abortTransaction()
+
+        next(new CustomError(errorsEnum.INTERNAL_ERROR, 500))
     }
 
-    const post = await Post.create({
-        userId: req.loggedUser.id,
-        content: content,
-        media: medias
-    });
-
-    let user = await User.findById(req.loggedUser.id);
-
-    user.homePageStatus.unshift(post.id);
-    user.sharedPosts.unshift(post.id);
-    await user.save();
-
-    user.friends.forEach(async (friendId) => {
-        let friend = await User.findById(friendId);
-        friend.homePageStatus.unshift(post.id);
-
-        await friend.save();
-    });
-
-    res.status(200).json({
-        success: true,
-        message: "Post succesfully created",
-        post: post
-    });
+    return session.endSession()
 });
 
 const deletePost = asyncErrorWrapper(async (req, res, next) => {
@@ -123,9 +136,9 @@ const undoLikePost = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const getSinglePost = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.data;
+    const post = req.params.postId;
 
-    res.status(200).json({
+    return res.status(200).json({
         succes: true,
         post: post
     });
