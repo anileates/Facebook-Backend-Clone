@@ -93,15 +93,12 @@ const deletePost = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const editPost = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.data;
-    post.content = req.body.newContent;
+    const { newContent } = req.body
+
+    const post = await Post.findById(req.params.postId);
+    post.content = newContent;
 
     let editedPost = await post.save();
-    editedPost = editedPost.toObject();
-
-    delete editedPost['comments']
-    delete editedPost['likes']
-    delete editedPost['__v']
 
     res.status(200).json({
         succes: true,
@@ -111,11 +108,11 @@ const editPost = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const likePost = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.data;
     const user = req.loggedUser;
+    const post = await Post.findById(req.params.postId);
 
     if (post.likes.includes(user.id)) {
-        return next(new CustomError("You already liked this post", 400));
+        return res.sendStatus(200);
     }
 
     post.likes.push(user.id);
@@ -129,11 +126,11 @@ const likePost = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const undoLikePost = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.data;
+    const post = await Post.findById(req.params.postId);
     const user = req.loggedUser;
 
     if (!post.likes.includes(user.id)) {
-        return next(new CustomError("You already did not like this post", 400));
+        return res.sendStatus(400)
     }
 
     const index = post.likes.indexOf(user.id);
@@ -142,7 +139,7 @@ const undoLikePost = asyncErrorWrapper(async (req, res, next) => {
     post.likeCount = post.likes.length;
     await post.save();
 
-    res.status(200).json({
+    return res.status(200).json({
         succes: true,
         message: "Unliked"
     });

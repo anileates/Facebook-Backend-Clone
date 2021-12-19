@@ -19,11 +19,11 @@ router.post("/create-post", getAccessToRoute, statusImageUpload.fields([
 ]), createPost);
 
 router.delete("/:postId", [getAccessToRoute, checkPostExist, getPostOwnerAccess], deletePost);
-router.put("/:postId/edit", [getAccessToRoute, checkPostExist, getPostOwnerAccess], editPost);
+router.put("/:postId", [getAccessToRoute, checkPostExist, getPostOwnerAccess], editPost);
 router.post("/:postId/like", [getAccessToRoute, checkPostExist], likePost);
 router.post("/:postId/undoLike", [getAccessToRoute, checkPostExist], undoLikePost);
 
-// .../api/posts/:post_id/answers şeklinde post'a bağlı olduğu için böyle bir route kullandık
+// .../api/posts/:post_id/comments/...
 router.use("/:postId/comments", checkPostExist, commentRouter);
 
 module.exports = router;
