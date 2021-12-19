@@ -5,6 +5,7 @@ const asyncErrorWrapper = require('express-async-handler');
 const User = require('../../models/User');
 const errorsEnum = require("../../helpers/errorHelpers/errorsEnum");
 const Post = require("../../models/Post");
+const Comment = require('../../models/Comment')
 
 /**
  * This method verifies the given token by @JWT_SECRET_KEY.
@@ -51,9 +52,9 @@ const getPostOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
 
 const getCommentOwnerAccess = asyncErrorWrapper(async (req, res, next) => {
     const userId = req.loggedUser.id;
-    const commentOwnerId = await Comment.findById(req.params.commentId).select('userId').userId;
+    const commentOwnerId = await Comment.findById(req.params.commentId).select('userId');
 
-    if (commentOwnerId != userId) {
+    if (commentOwnerId.userId != userId) {
         return next(new CustomError(errorsEnum.NOT_AUTHORIZED, 401));
     }
 

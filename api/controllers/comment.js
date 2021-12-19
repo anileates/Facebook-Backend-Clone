@@ -138,7 +138,7 @@ const undoLikeAComment = asyncErrorWrapper(async (req, res, next) => {
     const loggedUser = req.loggedUser;
 
     if (!comment.likes.includes(loggedUser.id)) {
-        return next(new CustomError("You are already unliked this comment", 400));
+        return res.sendStatus(200)
     }
 
     comment.likes.splice(comment.likes.indexOf(loggedUser.id), 1);

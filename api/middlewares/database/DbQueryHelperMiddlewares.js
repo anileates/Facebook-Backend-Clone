@@ -38,7 +38,7 @@ const checkPostExist = asyncErrorWrapper(async (req, res, next) => {
  */
 const checkCommentExists = asyncErrorWrapper(async (req, res, next) => {
     const { commentId } = req.params;
-    const postId = req.data.id;
+    const postId = req.params.postId;
 
     const comment = await Comment.exists({ _id: commentId, postId: postId });
     if (!comment) {

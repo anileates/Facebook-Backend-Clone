@@ -94,6 +94,10 @@ const errorsEnum = {
     INVALID_CONTENT: {
         type: 'validation/empty-content',
         message: 'Content body can not be empty.'
+    },
+    COMMENT_NOT_FOUND: {
+        type: 'not-found/comment-not-found',
+        message: 'Comment not found with given information(s).'
     }
 }
 
