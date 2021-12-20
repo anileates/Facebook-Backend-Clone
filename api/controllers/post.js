@@ -8,13 +8,13 @@ const mongoose = require('mongoose')
 const createPost = asyncErrorWrapper(async (req, res, next) => {
     const { content } = req.body;
 
-    if (content.trim() === '') {
+    if (!content || content.trim() === '') {
         return next(new CustomError(errorsEnum.INVALID_CONTENT, 400));
     }
 
     // Get filename to insert DB
     let medias = [];
-    req.files.media.forEach(file => medias.push(file.filename))
+    if (req.files) req.files.media.forEach(file => medias.push(file.filename))
 
     const session = await mongoose.startSession()
     try {

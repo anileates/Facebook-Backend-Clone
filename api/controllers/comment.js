@@ -142,7 +142,6 @@ const undoLikeAComment = asyncErrorWrapper(async (req, res, next) => {
 });
 
 module.exports = {
-    getAllComments,
     makeComment,
     editComment,
     deleteComment,

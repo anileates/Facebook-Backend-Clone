@@ -8,23 +8,23 @@ const customErrorHandler = (err, req, res, next) => {
     let customError = err;
 
     if (err.name === 'SyntaxError') {
-        customError = new CustomError(errorsEnum.UNEXPECTED_SYNTAX, 400);
+        customError = new CustomError(errorsEnum.UNEXPECTED_SYNTAX, 400, undefined, err.message);
     }
 
     if (err.name === 'ValidationError') {
-        customError = new CustomError(errorsEnum.VALIDATION_ERROR, 400);
+        customError = new CustomError(errorsEnum.VALIDATION_ERROR, 400, undefined, err.message);
     }
 
     if (err.code === 11000) {
-        customError = new CustomError(errorsEnum.DUPLICATE_KEY_FOUND, 400);
+        customError = new CustomError(errorsEnum.DUPLICATE_KEY_FOUND, 400, undefined, err.message);
     }
 
     if (err.name === 'CastError') {
-        customError = new CustomError(errorsEnum.CAST_ERROR, 400);
+        customError = new CustomError(errorsEnum.CAST_ERROR, 400, undefined, err.message);
     }
 
     if (err.code == 'LIMIT_UNEXPECTED_FILE') {
-        customError = new CustomError(errorsEnum.LIMIT_UNEXPECTED_FILE, 400);
+        customError = new CustomError(errorsEnum.LIMIT_UNEXPECTED_FILE, 400, undefined, err.message);
     }
 
     res
