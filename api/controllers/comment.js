@@ -6,17 +6,6 @@ const User = require('../models/User');
 const errorsEnum = require('../helpers/errorHelpers/errorsEnum');
 const mongoose = require('mongoose')
 
-const getAllComments = asyncErrorWrapper(async (req, res, next) => {
-    const post = req.data;
-
-    return res.status(200).json({
-        success: true,
-        pagination: pagination,
-        data: comments
-    })
-
-});
-
 const getMoreComments = asyncErrorWrapper(async (req, res, next) => {
     //Pagination
     const page = parseInt(req.query.page) || 1;

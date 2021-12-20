@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router({ mergeParams: true }); // mergeParams lets us to get params of prev. routes. 
 const { getAccessToRoute } = require('../middlewares/authorization/authMiddlewares');
-const { getAllComments, makeComment, editComment, deleteComment, likeAComment, undoLikeAComment, getMoreComments } = require('../controllers/comment');
+const { makeComment, editComment, deleteComment, likeAComment, undoLikeAComment, getMoreComments } = require('../controllers/comment');
 const { checkCommentExists } = require('../middlewares/database/DbQueryHelperMiddlewares');
 const { getCommentOwnerAccess } = require('../middlewares/authorization/authMiddlewares')
 
