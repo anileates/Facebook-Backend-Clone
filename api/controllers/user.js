@@ -11,7 +11,7 @@ const getUser = asyncErrorWrapper(async (req, res, next) => {
 
     const user = await User.findById(userId).select('_id firstName lastName birthday gender profile_image cover_image')
 
-    /** Check friendship status between two profiles. Because this info will be used on Front-end, like making 'Add friend or Unfriend' buttons */
+    /** Check friendship status between two profiles. This info will be used on Front-end, like making 'Add friend or Unfriend' buttons */
     const mainUser = await User.findById(req.loggedUser.id);
     let friendshipStatus = checkFriendshipStatus(mainUser, req.data.id);
 

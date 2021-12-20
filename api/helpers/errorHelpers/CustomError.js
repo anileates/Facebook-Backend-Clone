@@ -1,5 +1,5 @@
 /**
- * Make errors a object by this class
+ * Make errors an object by this class
  * If specific message is given, the message property defined in @errorEnum is ignored 
  */
 

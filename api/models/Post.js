@@ -44,6 +44,9 @@ const PostSchema = new Schema({
     }
 });
 
+/**
+ * After a post is deleted, delete all comments belong that post after a post 
+ */
 PostSchema.post('remove', async function () {
     await Comment.deleteMany({
         postId: this._id

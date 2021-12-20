@@ -150,7 +150,7 @@ const forgotPassword = asyncErrorWrapper(async (req, res, next) => {
 
 const resetPassword = asyncErrorWrapper(async (req, res, next) => {
     /**
-     * @logoutEverywhere is a boolean that references if user wants to log out sessions or not
+     * @logoutEverywhere is a boolean that points if user wants to log out sessions or not
      */
     const { resetPasswordToken } = req.query;
     const { newPassword, logoutEverywhere } = req.body;
@@ -203,6 +203,7 @@ const editPassword = asyncErrorWrapper(async (req, res, next) => {
     if (logoutEverywhere) {
         user.sessionTokens = [];
     }
+
     user.password = newPassword;
     await user.save();
 

@@ -21,7 +21,7 @@ const UserSchema = new Schema({
     gender: {
         type: String,
         required: [true, "Please provide a gender"],
-        enum: ['kadın', 'erkek', 'diğer'] //enum arrayi secimleri kisitlar
+        enum: ['woman', 'man', 'other']
     },
     email: {
         type: String,
@@ -36,7 +36,7 @@ const UserSchema = new Schema({
         type: String,
         minLength: [6, "Please provide a password with min length 6"],
         required: [true, "Please provide a password"],
-        select: false // DB'den user'ı çektiğinde default olarak şifrenin görünmemesi için
+        select: false // Don't fetch password by default when a user is fetched from DB
     },
     createdAt: {
         type: Date,
@@ -104,7 +104,8 @@ const UserSchema = new Schema({
 });
 
 UserSchema.methods.generateJwtFromUser = function () {
-    // kullanıcı için JWT üretir
+    // Generate a signed JWT token whose payload contains user id and email
+    // And client uses that token as access token
     const { JWT_SECRET_KEY } = process.env;
 
     const payload = {
@@ -118,12 +119,15 @@ UserSchema.methods.generateJwtFromUser = function () {
 };
 
 UserSchema.pre('save', function (next) {
-    //isModified fonk. mongodan gelir. belirtilen alan degismis mi diye bakar.
-    //kullaniciyi guncellerken sıkıntı çıkmaması için
+    // This method runs every time when UserObject is saved
+    // And checks if the password field is changed or not
+
+    // If password is not changed, break this method and go next
     if (!this.isModified('password')) {
         return next();
     }
 
+    // If password is changed than encrypt the password again
     bcrypt.genSalt(10, (err, salt) => {
         if (err) next(err);
         bcrypt.hash(this.password, salt, (err, hash) => {
@@ -135,7 +139,7 @@ UserSchema.pre('save', function (next) {
 });
 
 UserSchema.post('remove', async function () {
-    // Bir kullanıcı kaldırılığında o kullanıcının gönderilerini de kaldır.
+    // Remove all user posts when a user is deleted 
     try {
         await Post.deleteMany({
             userId: this._id
@@ -146,15 +150,19 @@ UserSchema.post('remove', async function () {
 });
 
 UserSchema.methods.generateResetPasswordTokenFromUser = function () {
-    const randomHexString = crypto.randomBytes(15).toString("hex");
-
     const { RESET_PASSWORD_EXPIRE } = process.env;
 
+    /**
+     * First create a 15 randomBytes hex'ed string 
+     * Than hash this string with SHA256
+     */
+    const randomHexString = crypto.randomBytes(15).toString("hex");
     const resetPasswordToken =
         crypto.createHash("SHA256")
             .update(randomHexString)
             .digest("hex");
 
+    // Set a expiration date for this token in DB
     this.resetPasswordToken = resetPasswordToken;
     this.resetPasswordExpire = Date.now() + parseInt(RESET_PASSWORD_EXPIRE)
 
@@ -176,6 +184,8 @@ UserSchema.methods.generateteAccountActivationToken = function () {
 }
 
 UserSchema.methods.generateemailChangingCode = function () {
+    // Just generate a 6 digit random code. 
+    // Client must enter this code when wanted to change its email adress
     const code = Math.floor(100000 + Math.random() * 900000);
 
     this.emailChangingCode = code;

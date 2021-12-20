@@ -5,7 +5,7 @@ const fs = require('fs');
 const errorsEnum = require('../../helpers/errorHelpers/errorsEnum');
 
 const storage = multer.diskStorage({
-    //funcs to get some data to set destination or filename
+    // Get some data to set destination or filename
     destination: function (req, file, callback) {
         const rootDir = path.dirname(require.main.filename);
         const imagesPath1 = path.join(rootDir, "/public/uploads/coverImages");
