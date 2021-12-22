@@ -22,6 +22,48 @@ const getUser = asyncErrorWrapper(async (req, res, next) => {
     });
 });
 
+const getUserPosts = asyncErrorWrapper(async (req, res, next) => {
+    const userId = req.params.userId;
+
+    //Pagination
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const pagination = {};
+    const user = await User.findById(userId);
+
+    const totalPost = user.sharedPosts.length;
+
+    if (startIndex > 0) {
+        pagination.previous = {
+            page: page - 1,
+            limit: limit
+        }
+    }
+
+    if (endIndex < totalPost) {
+        pagination.next = {
+            page: page + 1,
+            limit: limit
+        }
+    }
+
+    let posts = await User.find({ _id: userId }).select('-_id sharedPosts')
+        .where('sharedPosts').slice(startIndex, limit)
+        .populate({ path: 'sharedPosts', select: '-comments', populate: { path: 'userId', select: 'profile_image cover_image firstName lastName' } });
+
+    let postsArrayObject = posts[0].sharedPosts.toObject();
+
+    res.status(200).json({
+        success: true,
+        pagination: pagination,
+        data: postsArrayObject
+    });
+});
+
 const addFriend = asyncErrorWrapper(async (req, res, next) => {
     const session = await mongoose.startSession()
 
@@ -224,6 +266,7 @@ const denyRequest = asyncErrorWrapper(async (req, res, next) => {
 
 module.exports = {
     getUser,
+    getUserPosts,
     addFriend,
     acceptFriendRequest,
     unfriend,

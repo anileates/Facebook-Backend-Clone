@@ -142,7 +142,7 @@ const getFeed = asyncErrorWrapper(async (req, res, next) => {
 });
 
 const getSharedPosts = asyncErrorWrapper(async (req, res, next) => {
-    const userId = req.params.userId || req.loggedUser.id;
+    const userId = req.loggedUser.id;
 
     //Pagination
     const page = parseInt(req.query.page) || 1;
