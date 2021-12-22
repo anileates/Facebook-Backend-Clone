@@ -9,9 +9,14 @@ const app = express();
 var cookieParser = require('cookie-parser')
 app.use(cookieParser())
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./docs/swagger.json');
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 /*********************** ***********************/
 const path = require('path');
-dotenv.config({path: "./api/config/config.env"});
+dotenv.config({ path: "./api/config/config.env" });
 
 connectDatabase();
 app.use(express.json());

@@ -1,0 +1,371 @@
+{
+    "openapi": "3.0.3",
+    "info": {
+        "title": "Facebook Backend Clone",
+        "description": "An api study like Facebook requirements",
+        "version": "1.0.0",
+        "contact": {
+            "name": "Anil Erdem Ates",
+            "url": "http://www.example.com/support",
+            "email": "support@example.com"
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:5000/api/v1",
+            "description": "Local server"
+        }
+    ],
+    "tags": [
+        {
+            "name": "Users"
+        }
+    ],
+    "components": {
+        "schemas": {
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Mongo Document Id",
+                        "example": "61bb0fa2b09a92374cfcf2f6"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Just name",
+                        "example": "Anil Erdem Ates"
+                    }
+                }
+            },
+            "Error": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "This means error type.",
+                        "example": "user-not-found"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "This is a short human-readable error message.",
+                        "example": "User not found with given information(s)."
+                    },
+                    "detail": {
+                        "type": "string",
+                        "description": "This is a detailed information of the error for developers. Most error messages is not included this property.",
+                        "example": "Mongoose error Cast to ObjectId failed for value abc1234 at path _id"
+                    }
+                }
+            },
+            "Post": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Mongo Document Id",
+                        "example": "61bb0fa2b09a92374cfcf2f6"
+                    },
+                    "media": {
+                        "type": "string",
+                        "description": "Array of media URLs of the Post",
+                        "example": "media_61bda4922e96754228582609_071658cd-1f67-4b17-9576-3300f100353e.jpeg"
+                    },
+                    "comments": {
+                        "type": "array",
+                        "description": "Array of IDs of the comments in the post",
+                        "example": "[61bb0fa2b09a92374cfcf2f6, 61bb0fa2b09a92374cfcf2f6]"
+                    },
+                    "commentCount": {
+                        "type": "integer",
+                        "description": "Number of comments on the post"
+                    },
+                    "likes": {
+                        "type": "array",
+                        "description": "Array of IDs of users liked this post",
+                        "example": "[61bb0fa2b09a92374cfcf2f6, 61bb0fa2b09a92374cfcf2f6]"
+                    },
+                    "likeCount": {
+                        "type": "integer",
+                        "description": "Number of likes on the post"
+                    },
+                    "userId": {
+                        "type": "string",
+                        "description": "MongoDB document ID of the owner of this post",
+                        "example": "61bb0fa2b09a92374cfcf2f6"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Post content",
+                        "example": "Hello World."
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "description": "Time stamp of creation date. (UTC+0)",
+                        "example": "2021-12-19T10:43:14.291+00:00"
+                    }
+                }
+            }
+        }
+    },
+    "paths": {
+        "/users/{userId}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "This routes returns a user",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID of the user",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "It means you get an user object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#components/schemas/User"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{userId}/posts": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Get a user posts",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID of the user",
+                        "required": true
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "path",
+                        "description": "Limit value for pagination"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "It means you get an user object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#components/schemas/Post"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found with the given userId",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/users?search='anil'": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Search a user by name and lastname",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "keyword you want to search by (case-insensitive).",
+                        "example": "anil"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "If you see 200 status code, it means user is found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#components/schemas/User"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "If you see 404 status code, it means user is not found."
+                    }
+                }
+            }
+        },
+        "/users/{userId}/add-friend": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Send a friend request to a user. There are multiple error with same code in this route.",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID of the user to whom the request is to be sent",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Friend request was sent succesfully"
+                    },
+                    "400": {
+                        "description": "This route may return multiple error with 400 status. See the response title and detail if the response code is 400",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "If you see 404 status code, it means user was not found."
+                    }
+                }
+            }
+        },
+        "/users/{userId}/accept-friend-request": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Accept a friend request",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID of the user",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Friend request was sent succesfully"
+                    },
+                    "404": {
+                        "description": "If you see 404 status code, it means user was not found."
+                    },
+                    "400": {
+                        "description": "This means there is no friend request from this user."
+                    }
+                }
+            }
+        },
+        "/users/{userId}/cancel-friend-request": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Cancel a friend request",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID of the user",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Friend request was sent succesfully"
+                    },
+                    "404": {
+                        "description": "If you see 404 status code, it means user was not found."
+                    },
+                    "400": {
+                        "description": "You haven't sent request to this user or user accepted your request"
+                    }
+                }
+            }
+        },
+        "/users/{userId}/deny-friend-request": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Deny a friend request",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID of the user",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Friend request was sent succesfully"
+                    },
+                    "404": {
+                        "description": "If you see 404 status code, it means user was not found."
+                    },
+                    "400": {
+                        "description": "There is no friend request from this user."
+                    }
+                }
+            }
+        },
+        "/users/{userId}/remove-friend": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "description": "Accept a friend request",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "description": "ID of the user",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Friend request was sent succesfully"
+                    },
+                    "404": {
+                        "description": "If you see 404 status code, it means user was not found."
+                    },
+                    "400": {
+                        "description": "User is not your friend"
+                    }
+                }
+            }
+        }
+    }
+}
