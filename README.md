@@ -5,7 +5,8 @@
 ### How to run
 
 ```bash
-# configure config file which is in the /api/config folder and paste your MongoDB url, your SECRET KEY to sign JWTs, SMTP configs to send mails.
+# configure config file which is in the /api/config folder
+# paste your MongoDB url, your SECRET KEY to sign JWTs, SMTP configs to send mails.
 
 # install dependencies
 npm install
