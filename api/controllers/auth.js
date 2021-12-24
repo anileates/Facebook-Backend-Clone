@@ -64,7 +64,7 @@ const login = asyncErrorWrapper(async (req, res, next) => {
 
     //Compares hashed pw and user input by bcrypt
     if (!user || !comparePasswords(password, user.password)) {
-        return next(new CustomError(errorsEnum.INVALID_INPUTS, 400)); // TODO change errorCode with BadCredentials
+        return next(new CustomError(errorsEnum.BAD_CREDENTIALS, 400));
     }
 
     if (!user.enabled) {

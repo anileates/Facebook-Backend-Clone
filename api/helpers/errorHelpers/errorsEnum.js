@@ -98,6 +98,10 @@ const errorsEnum = {
     COMMENT_NOT_FOUND: {
         type: 'comment-not-found',
         message: 'Comment not found with given information(s).'
+    },
+    BAD_CREDENTIALS: {
+        type: 'bad-credentials',
+        message: 'Invalid email or password.'
     }
 }
 
