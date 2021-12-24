@@ -1,6 +1,6 @@
 ## Facebook backend clone
 
-> I had developed this backend study which was in Bitbucket repo for my semester project last year. I made some updates and moved it to Github.
+> I had developed this backend study for my semester project last year. I just made some updates and moved it to Github.
 
 ### How to run
 
