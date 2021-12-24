@@ -14,7 +14,9 @@ const createPost = asyncErrorWrapper(async (req, res, next) => {
 
     // Get filename to insert DB
     let medias = [];
-    if (req.files) req.files.media.forEach(file => medias.push(file.filename))
+    if (req.files.media) {
+        req.files.media.forEach(file => medias.push(file.filename))
+    }
 
     const session = await mongoose.startSession()
     try {
