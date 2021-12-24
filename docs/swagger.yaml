@@ -1,0 +1,918 @@
+openapi: 3.0.0
+info:
+  title: Facebook Backend Clone
+  description: An api study like Facebook requirements
+  version: 1.0.0
+  contact:
+    name: Anil Erdem Ates
+    url: http://www.github.com/atesanilerdem
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local server
+tags:
+  - name: Auth
+  - name: Users
+  - name: Posts
+  - name: Comments
+  - name: Profile
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Mongo Document Id
+          example: 61bb0fa2b09a92374cfcf2f6
+        name:
+          type: string
+          example: Anil Erdem Ates
+        gender:
+          type: string
+          enum:
+            - man
+            - woman
+            - other
+    Error:
+      type: object
+      properties:
+        type:
+          type: string
+          description: This means error type.
+          example: user-not-found
+        title:
+          type: string
+          description: This is a short human-readable error message.
+          example: User not found with given information(s).
+        detail:
+          type: string
+          description: >-
+            This is a detailed information of the error for developers. Most
+            error messages is not included this property.
+          example: Mongoose error Cast to ObjectId failed for value abc1234 at path _id
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Mongo Document Id
+          example: 61bb0fa2b09a92374cfcf2f6
+        media:
+          type: string
+          description: Array of media URLs of the Post
+          example: >-
+            media_61bda4922e96754228582609_071658cd-1f67-4b17-9576-3300f100353e.jpeg
+        comments:
+          type: array
+          description: Array of IDs of the comments in the post
+          example: "[61bb0fa2b09a92374cfcf2f6, 61bb0fa2b09a92374cfcf2f6]"
+        commentCount:
+          type: integer
+          description: Number of comments on the post
+        likes:
+          type: array
+          description: Array of IDs of users liked this post
+          example: "[61bb0fa2b09a92374cfcf2f6, 61bb0fa2b09a92374cfcf2f6]"
+        likeCount:
+          type: integer
+          description: Number of likes on the post
+        userId:
+          type: string
+          description: MongoDB document ID of the owner of this post
+          example: 61bb0fa2b09a92374cfcf2f6
+        content:
+          type: string
+          description: Post content
+          example: Hello World.
+        createdAt:
+          type: string
+          description: Time stamp of creation date. (UTC+0)
+          example: "2021-12-19T10:43:14.291+00:00"
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Mongo Document Id
+          example: 61bb0fa2b09a92374cfcf2f6
+        likes:
+          type: array
+          description: Array of IDs of users liked this comment
+          example: "[61bb0fa2b09a92374cfcf2f6, 61bb0fa2b09a92374cfcf2f6]"
+        likeCount:
+          type: integer
+          description: Number of likes on the comments
+        userId:
+          type: string
+          description: MongoDB document ID of the owner of this comment
+          example: 61bb0fa2b09a92374cfcf2f6
+        content:
+          type: string
+          description: Comment content
+          example: This is a comment
+        createdAt:
+          type: string
+          description: Time stamp of creation date. (UTC+0)
+          example: "2021-12-19T10:43:14.291+00:00"
+  securitySchemes:
+    access_token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - access_token: []
+parameters:
+  authParam:
+    name: Authorization
+    in: header
+    description: Pass the access_token which you get after signed in
+    required: true
+    example: "Bearer: <access_token>"
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      requestBody:
+        description: >-
+          User to register. All the specified places in the example are required
+          to register.
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/User"
+            example:
+              firstName: Anil
+              lastName: Ates
+              birthday: "2000-01-25"
+              gender: man
+              email: foo@example.com
+              password: qwerty12345
+      responses:
+        "200":
+          description: Means registiration is successful.
+          content:
+            application/json:
+              example:
+                success: true
+                message: Signed Up Succesfully. Please activate your account.
+        "400":
+          description: >-
+            This route may return multiple error with 400 status. See the
+            response title and detail if the response code is 400.
+          content:
+            application/json:
+              examples:
+                duplicate_key:
+                  description: This error means email is already in use.
+                  value:
+                    example:
+                      type: duplicate-key
+                      title: Duplicate input found
+                invalid date format:
+                  description: Birthday format must be YYYY-MM-DD.
+                  value:
+                    example:
+                      type: invalid-date-format
+                      title: Date format is not valid
+  /auth/resend-activation-mail:
+    post:
+      tags:
+        - Auth
+      description: >-
+        You need to activate account after register. Normally activation mail is
+        sent automatically after register. But, mailing may be required again.
+      requestBody:
+        description: Post the email which you want to send mail again.
+        content:
+          application/json:
+            schema:
+              $ref: "#components/schemas/User"
+            example:
+              email: foo@example.com
+  /auth/activate-account?accountActivationToken=:
+    get:
+      tags:
+        - Auth
+      description: Activate an account using activation token which is sent to Mail adress.
+      parameters:
+        - name: accountActivationToken
+          in: query
+          description: This will be sent to registered mail adress.
+      responses:
+        "200":
+          description: Means account activated successfully.
+        "400":
+          description: Means token is not valid.
+  /auth/login:
+    post:
+      description: Login route.
+      tags:
+        - Auth
+      requestBody:
+        description: Email and password.
+        content:
+          application/json:
+            schema:
+              $ref: "#/definition/inBody"
+            example:
+              email: foo@example.com
+              password: wvnha1235
+      responses:
+        "200":
+          description: Loged in successfully.
+          content:
+            application/json:
+              example:
+                success: true
+                access_token: >-
+                  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxYzU4ODFhZDdlNWZhMzMxYzlmZGM1ZiIsImVtYWlsIjoiYXRlc2FuaWxlcmRlbUBnbWFpbC5jb20iLCJpYXQiOjE2NDAzMzU1Njl9.Vy5nOJJ6gC4huBPi3Ih05ysKj9wN0BKkDHpawafWpTE
+                data:
+                  userId: 61c5881ad7e5fa331c9fdc5f
+                  name: Anil
+                  email: atesanilerdem@gmail.com
+  /auth/logout:
+    post:
+      description: Send the access_token to the backend to logout.
+      tags:
+        - Auth
+      parameters:
+        - $ref: "#/parameters/authParam"
+  /auth/forgot-password:
+    post:
+      description: This route sends a Password Reset mail to given adress.
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/definition/inBody"
+            example:
+              email: foo@example.com
+  /auth/reset-password:
+    put:
+      description: >-
+        This route is used to reset password after forgot-password request. Pass
+        the resetPasswordToken in query params. Dynamic url will be sent in
+        Password Reset mail.
+      tags:
+        - Auth
+      requestBody:
+        description: >-
+          logoutEverywhere value reference that if user wants to logout all
+          sessions or not.
+        content:
+          application/json:
+            schema:
+              $ref: "#/definition/inBody"
+            example:
+              newPassword: qwerty12345
+              logoutEverywhere: true
+  /auth/edit-password:
+    put:
+      description: This route is used to edit password.
+      tags:
+        - Auth
+      requestBody:
+        description: >-
+          logoutEverywhere value reference that if user wants to logout all
+          sessions or not.
+        content:
+          application/json:
+            schema:
+              $ref: "#/definition/inBody"
+            example:
+              oldPassword: abcde1234
+              newPassword: qwerty12345
+              logoutEverywhere: true
+      parameters:
+        - $ref: "#/parameters/authParam"
+  /auth/request-mail-change:
+    put:
+      parameters:
+        - $ref: "#/parameters/authParam"
+      description: >-
+        Requesting this routes sends a 6 digit confirmation code to given new
+        mail adress. That code must be used in next route.
+      tags:
+        - Auth
+      requestBody:
+        description: Needs new email adress and password.
+        content:
+          application/json:
+            schema:
+              $ref: "#/definition/inBody"
+            example:
+              newEmail: foo@example.com
+              password: 123asd
+  /auth/change-mail-adress:
+    put:
+      description: This route is used to change email adress.
+      tags:
+        - Auth
+      requestBody:
+        description: Needs new email adress and password.
+        content:
+          application/json:
+            schema:
+              $ref: "#/definition/inBody"
+            example:
+              newEmail: foo@example.com
+              confirmationCode: "123789"
+      parameters:
+        - $ref: "#/parameters/authParam"
+  /users/{userId}:
+    get:
+      tags:
+        - Users
+      description: This routes returns a user
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: It means you get an user object
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#components/schemas/User"
+  /users/{userId}/posts:
+    get:
+      tags:
+        - Users
+      description: Get a user posts
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+        - name: page
+          in: query
+          description: Page number for pagination
+        - name: limit
+          in: path
+          description: Limit value for pagination
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: It means you get an user object
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#components/schemas/Post"
+        "404":
+          description: User not found with the given userId
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /users?search='anil':
+    get:
+      tags:
+        - Users
+      description: Search a user by name and lastname
+      parameters:
+        - name: search
+          in: query
+          description: keyword you want to search by (case-insensitive).
+          example: anil
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: If you see 200 status code, it means user is found.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#components/schemas/User"
+        "404":
+          description: If you see 404 status code, it means user is not found.
+  /users/{userId}/add-friend:
+    get:
+      tags:
+        - Users
+      description: >-
+        Send a friend request to a user. There are multiple error with same code
+        in this route.
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user to whom the request is to be sent
+          required: true
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: Friend request was sent succesfully
+        "400":
+          description: >-
+            This route may return multiple error with 400 status. See the
+            response title and detail if the response code is 400
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: If you see 404 status code, it means user was not found.
+  /users/{userId}/accept-friend-request:
+    get:
+      tags:
+        - Users
+      description: Accept a friend request
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: Friend request was sent succesfully
+        "400":
+          description: This means there is no friend request from this user.
+        "404":
+          description: If you see 404 status code, it means user was not found.
+  /users/{userId}/cancel-friend-request:
+    get:
+      tags:
+        - Users
+      description: Cancel a friend request
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: Friend request was sent succesfully
+        "400":
+          description: You haven't sent request to this user or user accepted your request
+        "404":
+          description: If you see 404 status code, it means user was not found.
+  /users/{userId}/deny-friend-request:
+    get:
+      tags:
+        - Users
+      description: Deny a friend request
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: Friend request was sent succesfully
+        "400":
+          description: There is no friend request from this user.
+        "404":
+          description: If you see 404 status code, it means user was not found.
+  /users/{userId}/remove-friend:
+    get:
+      tags:
+        - Users
+      description: Accept a friend request
+      parameters:
+        - name: userId
+          in: path
+          description: ID of the user
+          required: true
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: Friend request was sent succesfully
+        "400":
+          description: User is not your friend
+        "404":
+          description: If you see 404 status code, it means user was not found.
+  /posts/create-post:
+    post:
+      tags:
+        - Posts
+      description: Create a post
+      parameters:
+        - $ref: "#/parameters/authParam"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                media:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                content:
+                  type: string
+                  example: Hey! This is the first post!
+      responses:
+        "200":
+          description: Post is created succesfully
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+  /posts/{postId}:
+    get:
+      tags:
+        - Posts
+      description: Get a single post
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: postId
+          in: path
+          required: true
+      responses:
+        "200":
+          description: You get the post successfully
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+    put:
+      tags:
+        - Posts
+      description: Edit a post
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: postId
+          in: path
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newContent:
+                  type: string
+                  example: Hey! I just updated my content.
+      responses:
+        "200":
+          description: Post is edited succesfully
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+          content:
+            application/json: {}
+        "404":
+          description: Post not found with the given ID
+          content:
+            application/json: {}
+    delete:
+      tags:
+        - Posts
+      description: Delete a post
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: postId
+          in: path
+          required: true
+      responses:
+        "200":
+          description: Post is edited succesfully
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+  /posts/{postId}/like:
+    post:
+      tags:
+        - Posts
+      description: Like a post
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: postId
+          in: path
+          required: true
+      responses:
+        "200":
+          description: Liked
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+  /posts/{postId}/undolike:
+    post:
+      tags:
+        - Posts
+      description: Undolike a post
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: postId
+          in: path
+          required: true
+      responses:
+        "200":
+          description: Undo like is succesful
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+  /posts/{postId}/comments:
+    get:
+      tags:
+        - Comments
+      description: Get a post comments
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: postId
+          in: path
+          required: true
+        - name: page
+          in: query
+          required: true
+          description: Pagination value
+        - name: limit
+          in: query
+          required: true
+          description: Limit value
+      responses:
+        "200":
+          description: You get the post successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#components/schemas/Comment"
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+    post:
+      tags:
+        - Comments
+      description: Create a comment
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: postId
+          in: path
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  example: This is a comment!
+      responses:
+        "200":
+          description: Post is created succesfully
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+  /posts/{postId}/comments/{commentId}:
+    parameters:
+      - $ref: "#/parameters/authParam"
+      - name: postId
+        in: path
+        required: true
+      - name: commentId
+        in: path
+        required: true
+    put:
+      tags:
+        - Comments
+      description: Edit a comment
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newContent:
+                  type: string
+                  example: This is an updated comment content!
+      responses:
+        "200":
+          description: It returns a success messags with the updated comment.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+        "404":
+          description: >-
+            Means comment belongs to the specified Post was not found with the
+            given ID. Make sure that both postId and commentId is valid or both
+            of them is not deleted.
+    delete:
+      tags:
+        - Comments
+      description: Delete a comment
+      responses:
+        "200":
+          description: Means comment was successfully deleted.
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+        "404":
+          description: >-
+            Means comment belongs to the specified Post was not found with the
+            given ID. Make sure that both postId and commentId is valid or both
+            of them is not deleted.
+  /posts/{postId}/comments/{commentId}/like:
+    parameters:
+      - $ref: "#/parameters/authParam"
+      - name: postId
+        in: path
+        required: true
+      - name: commentId
+        in: path
+        required: true
+    post:
+      tags:
+        - Comments
+      description: Like a comment
+      responses:
+        "200":
+          description: Means comment was successfully liked.
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+        "404":
+          description: >-
+            Means comment belongs to the specified Post was not found with the
+            given ID. Make sure that both postId and commentId is valid or both
+            of them is not deleted.
+  /posts/{postId}/comments/{commentId}/undoLike:
+    parameters:
+      - $ref: "#/parameters/authParam"
+      - name: postId
+        in: path
+        required: true
+      - name: commentId
+        in: path
+        required: true
+    post:
+      tags:
+        - Comments
+      description: Undo like a comment
+      responses:
+        "200":
+          description: Means comment was successfully undo liked.
+        "400":
+          description: Check the response title and detail if you get 400 status code.
+        "404":
+          description: >-
+            Means comment belongs to the specified Post was not found with the
+            given ID. Make sure that both postId and commentId is valid or both
+            of them is not deleted.
+  /profile/get-basics:
+    get:
+      tags:
+        - Profile
+      description: >-
+        This route returns basic user information like name, lastname, photoUrl
+        and friend request to use at navbar/sidebar.
+      parameters:
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: Returns an user object with the success message.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    example:
+                      profile_image: profileImage_61bb0fa2b09a92374cfcf2f6.jpeg
+                      cover_image: default_cover.jpg
+                      pendingFriendRequests: []
+                      _id: 61bb0fa2b09a92374cfcf2f6
+                      firstName: Anıl Erdem
+                      lastName: Ateş
+  /profile:
+    get:
+      tags:
+        - Profile
+      description: Get all profile information
+      parameters:
+        - $ref: "#/parameters/authParam"
+      responses:
+        "200":
+          description: Returns an user object
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                    example:
+                      profile_image: profileImage_61bb0fa2b09a92374cfcf2f6.jpeg
+                      cover_image: default_cover.jpg
+                      _id: 61bb0fa2b09a92374cfcf2f6
+                      firstName: Anıl Erdem
+                      lastName: Ateş
+                      birthday: "2000-11-23T00:00:00.000Z"
+                      gender: man
+  /profile/get-shared-posts:
+    get:
+      tags:
+        - Profile
+      description: Get user posts
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: page
+          in: query
+          description: Page number for pagination
+        - name: limit
+          in: path
+          description: Limit value for pagination
+      responses:
+        "200":
+          description: Returns paginated user posts with a success message
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  $ref: "#components/schemas/Post"
+  /profile/get-feed:
+    get:
+      tags:
+        - Profile
+      description: Get user posts
+      parameters:
+        - $ref: "#/parameters/authParam"
+        - name: page
+          in: query
+          description: Page number for pagination
+        - name: limit
+          in: path
+          description: Limit value for pagination
+      responses:
+        "200":
+          description: Returns paginated user feed with a success message
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#components/schemas/Post"
+  /profile/upload-profile-image:
+    post:
+      tags:
+        - Profile
+      description: Upload profile photo.
+      parameters:
+        - $ref: "#/parameters/authParam"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "200":
+          description: Upload is successful
+  /profile/upload-cover-image:
+    post:
+      tags:
+        - Profile
+      description: Upload cover photo.
+      parameters:
+        - $ref: "#/parameters/authParam"
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "200":
+          description: Upload is successful
+  /profile/edit-personal-data:
+    put:
+      tags:
+        - Profile
+      description: >-
+        Update profile information. Notice that only the specified fields in the
+        example are allowed to update by this route. Other properties which is
+        related with security (email, password etc.) must be changed by /auth/**
+        routes.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                firstName: Erdem
+                lastName: Atessss
+                birthday: "2000-05-25"
+                gender: man
+                relationShip: single
+                currentCity: ISTANBUL
+                hometown: DENIZLI

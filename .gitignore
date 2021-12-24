@@ -2,3 +2,4 @@
 Procfile
 public/
 
+**.env
